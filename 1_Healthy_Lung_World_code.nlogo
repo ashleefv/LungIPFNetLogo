@@ -53,7 +53,7 @@ to place-fibroblasts
     set shape "fibroblast"
     set color 27
     set size 5
-    while [ pcolor != 9.9 ] [ setxy (random-float world-width) (random-float world-height) ]
+    while [ patch_alveoli = 1 ] [ setxy (random-float world-width) (random-float world-height) ]
   ]
   set number-of-fibroblasts count fibroblasts
 end
@@ -66,9 +66,9 @@ end
 
 ;Migrate fibroblasts randomly on red patches only
 
-to migrate-fibroblasts-on-red
+to migrate-fibroblasts-on-non-alveoli
   ask fibroblasts [
-    let randDirection random-float 360 
+    let randDirection random-float 360
     let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
      while [ [patch_alveoli] of destination = 1 ]
        [
@@ -154,7 +154,6 @@ end
 to myofibroblast-secrete-collagen
   ask myofibroblasts [set pcolor 116 set patch_collagen 12]
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -506,6 +505,23 @@ BUTTON
 372
 Differentiate fibroblasts with TGFbeta
 differentiate-TGFbetaThresh
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+452
+186
+690
+219
+Migrate fibroblasts on non-alveoli ONLY
+migrate-fibroblasts-on-non-alveoli
 NIL
 1
 T
