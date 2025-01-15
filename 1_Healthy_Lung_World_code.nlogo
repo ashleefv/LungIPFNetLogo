@@ -33,7 +33,7 @@ to clear-world
 end
 
 to setup
-  ca
+  import-world "HistologyHealthyLung.csv"
   place-fibroblasts
   set TGFbetaDiffThresh 1
 end
@@ -50,6 +50,7 @@ to place-fibroblasts
     set breed fibroblasts
     set shape "fibroblast"
     set color 27
+    set size 5
   ]
   set number-of-fibroblasts count fibroblasts
 end
@@ -115,6 +116,10 @@ to draw-white
   if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor white ]]
 end
 
+to draw-red
+  if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor red ]]
+end
+
 ; The following code places and initial amount of growth factor on the patch that you coloured white with your mouse.
 
 to deposit-TGFbeta-on-white-patches
@@ -135,20 +140,17 @@ end
 
 
 
-
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-756
-40
-1412
-697
+773
+64
+1286
+578
 -1
 -1
-30.9
+5.0
 1
-10
+20
 1
 1
 1
@@ -156,10 +158,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--10
-10
--10
-10
+-50
+50
+-50
+50
 0
 0
 1
@@ -453,25 +455,14 @@ NIL
 NIL
 1
 
-MONITOR
-535
-26
-668
-71
-No. of myofibroblasts
-number-of-myofibroblasts
-17
-1
-11
-
 BUTTON
-392
-339
-633
-372
-Differentiate fbs with TGFbeta threshold
-differentiate-TGFbetaThresh
-NIL
+217
+94
+333
+127
+Draw red (fix)
+draw-red
+T
 1
 T
 OBSERVER
