@@ -70,7 +70,7 @@ to migrate-fibroblasts-on-red
   ask fibroblasts [
     let randDirection random-float 360 
     let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-     while [ [alveoli] of destination = 1 ]
+     while [ [patch_alveoli] of destination = 1 ]
        [
          set randDirection random-float 360
          set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
