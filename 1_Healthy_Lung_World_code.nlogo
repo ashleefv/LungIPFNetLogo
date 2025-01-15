@@ -1,8 +1,9 @@
-;~~~~~~~~~~~~~~ DEFINING BREEDS AND VARIABLES ~~~~~~~~~~~~~~~~~~~
+;----- Defining breeds and variables -----
 globals
 [
   number-of-fibroblasts
   number-of-myofibroblasts
+  total_world_collagen
   clock
 ]
 
@@ -16,8 +17,15 @@ patches-own
   patch_TGFbeta
 ]
 
+fibroblasts-own
+[
+]
 
-;~~~~~~~~~~~~~~ SET-UP and CLEAN-UP CODE ~~~~~~~~~~~~~~~~~~~
+myofibroblasts-own
+[
+]
+
+;-------- Set-up and cleand code ------
 
 to clear-world
   ca
@@ -26,55 +34,55 @@ end
 to setup
   ca
   place-fibroblasts
-
 end
 
 
-;~~~~~~~~~~~~~~ FIBROBLAST and MYOFIBROBLAST SUBROUTINES ~~~~~~~~~~~~~~~~~~~
+;----- Fibroblast and myofibroblast subroutines ------
 
-;-> Create fibroblasts in the world, according to the specified number in the slider
+;Create fibroblasts in the world, according to the specified number in the slider
 
 to place-fibroblasts
-  crt fibroblast-cells
+  crt initial-fibroblast-cells
   [
-    setxy (random-float world-width)
-          (random-float world-height)    ; randomize turtle locations
+    setxy (random-float world-width) (random-float world-height)
     set breed fibroblasts
     set shape "circle"
     set color 27
   ]
+  set number-of-fibroblasts count fibroblasts
 end
 
-;-> Migrate fibroblasts randomly around the world
+;Migrate fibroblasts randomly around the world
 
 to migrate-fibroblasts-randomly
   ask fibroblasts [rt random-float 30 lt random-float 30 fd 1]
 end
 
-;-> Proliferate fibroblasts
+;Proliferate fibroblasts
 
 to proliferate-fibroblasts
   ask fibroblasts [hatch 1 [right random 360 fd 1]]
   set number-of-fibroblasts count fibroblasts
 end
 
-;-> Kill fibroblasts that are over-crowded
+; Kill fibroblasts that are overcrowded
 
 to apoptose-crowded-fibroblasts
   ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
+  set number-of-fibroblasts count fibroblasts
 end
 
-;-> Differentiate fibroblasts into myofibroblasts if they are lonely
+; Differentiate fibroblasts into myofibroblasts if they are lonely
 
 to differentiate-lonely-fibroblasts-into-myofibroblasts
   ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "circle" set color 15 set size 1.25]]
   set number-of-myofibroblasts count myofibroblasts
 end
 
-;-> Move fibroblasts & myofibroblasts toward higher concentration of TGFbeta ("Chemotaxis")
+; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis)
 
 to chemotax-fibroblasts
-  ask fibroblasts [uphill patch_TGFbeta]
+  ask fibroblasts [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1]
 end
 
 to chemotax-myofibroblasts
@@ -88,42 +96,50 @@ to chemotax-myofibroblasts-within-threshold-amount-of-TGFbeta
   ]
 end
 
+;---- Deposit and diffuse growth factors (ligands) ------
 
-;~~~~~~~~~~~~~~ DEPOSIT and DIFFUSE GROWTH FACTORS ("Ligands") ~~~~~~~~~~~~~~~~~~~
-
-; -> Deposit growth factors by coloring with your mouse the patches you want the growth factors to diffuse from.
-; Wherever you click your mouse, the patch will turn white, and this will indicate a location where you want growth factor
-; to diffuse from.
+; Deposit growth factors by colouring with your mouse the patches you want the growth factors to diffuse from.
+; Wherever you click your mouse, the patch will turn white, and this will indicate a location where you want growth factor to diffuse from.
 
 to draw-white
-if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor white]]
+  if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor white ]]
 end
 
-; -> The following code places an initial amount of growth factor on the patch that you colored white with your mouse.
+; The following code places and initial amount of growth factor on the patch that you coloured white with your mouse.
 
 to deposit-TGFbeta-on-white-patches
   ask patches [if pcolor = white [set patch_TGFbeta 5000]]
 end
 
-; -> The following code "diffuses" growth factor from every patch to it's neighbors using the Netlogo primitive "diffuse"
+; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse".
 
 to diffuse-TGFbeta
-  diffuse patch_TGFbeta .1
-  ask patches [set pcolor scale-color gray patch_TGFbeta 0 10]
+  diffuse patch_TGFbeta .01
+  ask patches [set pcolor scale-color blue patch_TGFbeta 0 100]
 end
 
 to myofibroblast-secrete-collagen
   ask myofibroblasts [set pcolor 116 set patch_collagen 12]
 end
+
+
+
+
+
+
+
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-370
+714
 21
-883
-535
+1412
+720
 -1
 -1
-5.0
+8.52
 1
 10
 1
@@ -133,48 +149,22 @@ GRAPHICS-WINDOW
 1
 1
 1
--50
-50
--50
-50
+-40
+40
+-40
+40
 0
 0
 1
 ticks
 30.0
 
-SLIDER
-138
-14
-263
-47
-fibroblast-cells
-fibroblast-cells
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-MONITOR
-893
-23
-1050
-68
-NIL
-number-of-fibroblasts
-17
-1
-11
-
 BUTTON
-13
-15
-116
-48
-Clear World
+21
+19
+123
+52
+Clear world
 clear-world
 NIL
 1
@@ -187,11 +177,11 @@ NIL
 1
 
 BUTTON
-14
-55
-80
-88
-Setup
+20
+77
+128
+110
+Set up world
 setup
 NIL
 1
@@ -203,12 +193,38 @@ NIL
 NIL
 1
 
+SLIDER
+191
+30
+379
+63
+initial-fibroblast-cells
+initial-fibroblast-cells
+0
+100
+71.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+397
+25
+517
+70
+No. of fibroblasts
+number-of-fibroblasts
+17
+1
+11
+
 BUTTON
-14
-112
-231
-145
-Migrate-fibroblasts-randomly
+25
+187
+173
+220
+Migrate fibroblasts
 migrate-fibroblasts-randomly
 NIL
 1
@@ -221,11 +237,11 @@ NIL
 1
 
 BUTTON
-15
-157
-185
-190
-NIL
+24
+237
+189
+270
+Proliferate fibroblasts
 proliferate-fibroblasts
 NIL
 1
@@ -238,11 +254,11 @@ NIL
 1
 
 BUTTON
-15
-199
-238
-232
-NIL
+26
+285
+244
+318
+Apoptose crowded fibroblasts
 apoptose-crowded-fibroblasts
 NIL
 1
@@ -255,11 +271,11 @@ NIL
 1
 
 BUTTON
-15
-242
-370
-275
-NIL
+25
+339
+380
+372
+Differentiate lonely fibroblasts into myofibroblasts
 differentiate-lonely-fibroblasts-into-myofibroblasts
 NIL
 1
@@ -272,11 +288,11 @@ NIL
 1
 
 BUTTON
-15
-368
-116
-401
-NIL
+30
+455
+128
+488
+Draw white
 draw-white
 T
 1
@@ -289,11 +305,28 @@ NIL
 1
 
 BUTTON
-14
-406
-266
-439
+31
+550
+160
+583
+Diffuse TGFbeta
+diffuse-TGFbeta
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+31
+503
+219
+536
+Deposit TGFbeta on white
 deposit-TGFbeta-on-white-patches
 NIL
 1
@@ -305,29 +338,32 @@ NIL
 NIL
 1
 
-BUTTON
-15
-448
-147
-481
-NIL
-diffuse-TGFbeta
-T
+TEXTBOX
+31
+155
+409
+183
+Migration, proliferation, apoptosis, & differentiation
+11
+0.0
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+
+TEXTBOX
+32
+424
+182
+442
+TGFbeta deposits
+11
+0.0
 1
 
 BUTTON
-22
-548
-164
-581
-NIL
+396
+446
+562
+479
+Chemotax fibroblasts
 chemotax-fibroblasts
 NIL
 1
@@ -339,12 +375,22 @@ NIL
 NIL
 1
 
+TEXTBOX
+397
+420
+582
+448
+Chemotaxis towards TGFbeta
+11
+0.0
+1
+
 BUTTON
-172
-548
-340
-581
-NIL
+395
+498
+587
+531
+Chemotax myofibroblasts
 chemotax-myofibroblasts
 NIL
 1
@@ -356,23 +402,12 @@ NIL
 NIL
 1
 
-MONITOR
-893
-75
-1051
-120
-NIL
-number-of-myofibroblasts
-17
-1
-11
-
 BUTTON
-172
-588
-541
-621
-NIL
+395
+547
+690
+580
+Chemotax myofibroblasts within threshold
 chemotax-myofibroblasts-within-threshold-amount-of-TGFbeta
 NIL
 1
@@ -384,11 +419,21 @@ NIL
 NIL
 1
 
+TEXTBOX
+38
+625
+188
+643
+Collagen
+11
+0.0
+1
+
 BUTTON
-606
-593
-834
-626
+33
+653
+261
+686
 NIL
 myofibroblast-secrete-collagen
 NIL
@@ -743,7 +788,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.3.0
+NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
