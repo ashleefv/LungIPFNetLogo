@@ -46,7 +46,7 @@ to place-fibroblasts
   [
     setxy (random-float world-width) (random-float world-height)
     set breed fibroblasts
-    set shape "circle"
+    set shape "fibroblast"
     set color 27
   ]
   set number-of-fibroblasts count fibroblasts
@@ -75,7 +75,7 @@ end
 ; Differentiate fibroblasts into myofibroblasts if they are lonely
 
 to differentiate-lonely-fibroblasts-into-myofibroblasts
-  ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "circle" set color 15 set size 1.25]]
+  ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "myofibroblast" set color 136 set size 1.25]]
   set number-of-myofibroblasts count myofibroblasts
 end
 
@@ -129,17 +129,15 @@ end
 
 
 
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-714
-21
+756
+40
 1412
-720
+697
 -1
 -1
-8.52
+30.9
 1
 10
 1
@@ -149,10 +147,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--40
-40
--40
-40
+-10
+10
+-10
+10
 0
 0
 1
@@ -591,6 +589,19 @@ Circle -16777216 true false 60 75 60
 Circle -16777216 true false 180 75 60
 Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 150 198 192 205 210 220 227 242 251 229 236 206 212 183
 
+fibroblast
+true
+0
+Polygon -7500403 true true 151 90 1 145 152 209 300 148 152 91
+Circle -7500403 true true 91 91 120
+Circle -6459832 true false 114 114 72
+Circle -955883 true false 121 121 58
+Polygon -2674135 true false 133 96
+Polygon -7500403 true true 152 91 104 99 79 112 49 127 33 137 147 94
+Polygon -7500403 true true 136 211 184 203 209 190 239 175 255 165 141 208
+Polygon -7500403 true true 160 95 208 103 233 116 263 131 279 141 165 98
+Polygon -7500403 true true 165 209 117 201 92 188 62 173 46 163 160 206
+
 fish
 false
 0
@@ -648,6 +659,19 @@ line half
 true
 0
 Line -7500403 true 150 0 150 150
+
+myofibroblast
+true
+0
+Polygon -7500403 true true 151 90 1 145 152 209 300 148 152 91
+Circle -7500403 true true 91 91 120
+Circle -6459832 true false 114 114 72
+Circle -2674135 true false 121 121 58
+Polygon -2674135 true false 133 96
+Polygon -7500403 true true 152 91 104 99 79 112 49 127 33 137 147 94
+Polygon -7500403 true true 136 211 184 203 209 190 239 175 255 165 141 208
+Polygon -7500403 true true 160 95 208 103 233 116 263 131 279 141 165 98
+Polygon -7500403 true true 165 209 117 201 92 188 62 173 46 163 160 206
 
 pentagon
 false
