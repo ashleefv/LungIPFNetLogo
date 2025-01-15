@@ -34,10 +34,10 @@ to clear-world
 end
 
 to setup
-  import-world "HistologyHealthyLung.csv"
+  import-world "HistologyHealthyLung.csv"  
+  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
   place-fibroblasts
   set TGFbetaDiffThresh 1
-  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
 end
 
 
