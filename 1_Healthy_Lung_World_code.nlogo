@@ -16,6 +16,7 @@ patches-own
 [
   patch_collagen
   patch_TGFbeta
+  patch_alveoli
 ]
 
 fibroblasts-own
@@ -36,6 +37,7 @@ to setup
   import-world "HistologyHealthyLung.csv"
   place-fibroblasts
   set TGFbetaDiffThresh 1
+  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
 end
 
 
@@ -51,6 +53,7 @@ to place-fibroblasts
     set shape "fibroblast"
     set color 27
     set size 5
+    while [ pcolor != 9.9 ] [ setxy (random-float world-width) (random-float world-height) ]
   ]
   set number-of-fibroblasts count fibroblasts
 end
@@ -59,6 +62,21 @@ end
 
 to migrate-fibroblasts-randomly
   ask fibroblasts [rt random-float 30 lt random-float 30 fd 1]
+end
+
+;Migrate fibroblasts randomly on red patches only
+
+to migrate-fibroblasts-on-red
+  ask fibroblasts [
+    let randDirection random-float 360 
+    let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+     while [ [alveoli] of destination = 1 ]
+       [
+         set randDirection random-float 360
+         set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+       ]
+     move-to destination
+    ]
 end
 
 ;Proliferate fibroblasts
