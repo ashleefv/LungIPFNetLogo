@@ -78,14 +78,14 @@ end
 ; Differentiate fibroblasts into myofibroblasts if they are lonely
 
 to differentiate-lonely-fibroblasts-into-myofibroblasts
-  ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "myofibroblast" set color 136 set size 1.25]]
+  ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "myofibroblast" set color 77 set size 5]]
   set number-of-myofibroblasts count myofibroblasts
 end
 
 ; Differentiate fibroblasts if they are in a patch of TGFbeta > TGFbetaDiffThresh
 
 to differentiate-TGFbetaThresh
-  ask fibroblasts [if patch_TGFbeta > TGFbetaDiffThresh [set breed myofibroblasts set shape "myofibroblast" set color 15 set size 1.25]]
+  ask fibroblasts [if patch_TGFbeta > TGFbetaDiffThresh [set breed myofibroblasts set shape "myofibroblast" set color 77 set size 5]]
   set number-of-fibroblasts count fibroblasts
   set number-of-myofibroblasts count myofibroblasts
 end
@@ -136,8 +136,6 @@ end
 to myofibroblast-secrete-collagen
   ask myofibroblasts [set pcolor 116 set patch_collagen 12]
 end
-
-
 
 
 @#$#@#$#@
@@ -472,6 +470,34 @@ NIL
 NIL
 1
 
+MONITOR
+544
+25
+691
+70
+No. of myofibroblasts
+number-of-myofibroblasts
+17
+1
+11
+
+BUTTON
+442
+339
+703
+372
+Differentiate fibroblasts with TGFbeta
+differentiate-TGFbetaThresh
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -620,15 +646,15 @@ Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 
 fibroblast
 true
 0
-Polygon -7500403 true true 151 90 1 145 152 209 300 148 152 91
-Circle -7500403 true true 91 91 120
+Polygon -7500403 true true 90 149 145 299 209 148 148 0 91 148
+Circle -7500403 true true 91 89 120
 Circle -6459832 true false 114 114 72
 Circle -955883 true false 121 121 58
-Polygon -2674135 true false 133 96
-Polygon -7500403 true true 152 91 104 99 79 112 49 127 33 137 147 94
-Polygon -7500403 true true 136 211 184 203 209 190 239 175 255 165 141 208
-Polygon -7500403 true true 160 95 208 103 233 116 263 131 279 141 165 98
-Polygon -7500403 true true 165 209 117 201 92 188 62 173 46 163 160 206
+Polygon -2674135 true false 96 167
+Polygon -7500403 true true 91 148 99 196 112 221 127 251 137 267 94 153
+Polygon -7500403 true true 211 164 203 116 190 91 175 61 165 45 208 159
+Polygon -7500403 true true 95 140 103 92 116 67 131 37 141 21 98 135
+Polygon -7500403 true true 209 135 201 183 188 208 173 238 163 254 206 140
 
 fish
 false
@@ -691,15 +717,15 @@ Line -7500403 true 150 0 150 150
 myofibroblast
 true
 0
-Polygon -7500403 true true 151 90 1 145 152 209 300 148 152 91
-Circle -7500403 true true 91 91 120
+Polygon -7500403 true true 90 149 145 299 209 148 148 0 91 148
+Circle -7500403 true true 91 89 120
 Circle -6459832 true false 114 114 72
-Circle -2674135 true false 121 121 58
-Polygon -2674135 true false 133 96
-Polygon -7500403 true true 152 91 104 99 79 112 49 127 33 137 147 94
-Polygon -7500403 true true 136 211 184 203 209 190 239 175 255 165 141 208
-Polygon -7500403 true true 160 95 208 103 233 116 263 131 279 141 165 98
-Polygon -7500403 true true 165 209 117 201 92 188 62 173 46 163 160 206
+Circle -14835848 true false 121 121 58
+Polygon -2674135 true false 96 167
+Polygon -7500403 true true 91 148 99 196 112 221 127 251 137 267 94 153
+Polygon -7500403 true true 211 164 203 116 190 91 175 61 165 45 208 159
+Polygon -7500403 true true 95 140 103 92 116 67 131 37 141 21 98 135
+Polygon -7500403 true true 209 135 201 183 188 208 173 238 163 254 206 140
 
 pentagon
 false
