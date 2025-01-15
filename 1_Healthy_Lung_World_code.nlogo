@@ -4,6 +4,7 @@ globals
   number-of-fibroblasts
   number-of-myofibroblasts
   total_world_collagen
+  TGFbetaDiffThresh
   clock
 ]
 
@@ -34,6 +35,7 @@ end
 to setup
   ca
   place-fibroblasts
+  set TGFbetaDiffThresh 1
 end
 
 
@@ -79,6 +81,14 @@ to differentiate-lonely-fibroblasts-into-myofibroblasts
   set number-of-myofibroblasts count myofibroblasts
 end
 
+; Differentiate fibroblasts if they are in a patch of TGFbeta > TGFbetaDiffThresh
+
+to differentiate-TGFbetaThresh
+  ask fibroblasts [if patch_TGFbeta > TGFbetaDiffThresh [set breed myofibroblasts set shape "myofibroblast" set color 15 set size 1.25]]
+  set number-of-fibroblasts count fibroblasts
+  set number-of-myofibroblasts count myofibroblasts
+end
+
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis)
 
 to chemotax-fibroblasts
@@ -121,7 +131,6 @@ end
 to myofibroblast-secrete-collagen
   ask myofibroblasts [set pcolor 116 set patch_collagen 12]
 end
-
 
 
 
@@ -434,6 +443,34 @@ BUTTON
 686
 NIL
 myofibroblast-secrete-collagen
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+MONITOR
+535
+26
+668
+71
+No. of myofibroblasts
+number-of-myofibroblasts
+17
+1
+11
+
+BUTTON
+392
+339
+633
+372
+Differentiate fbs with TGFbeta threshold
+differentiate-TGFbetaThresh
 NIL
 1
 T
