@@ -15,6 +15,8 @@ globals
   fibro_collagen
   initial-number-of-sources
   TGFbetaDiffThresh
+  pentox-TGFbetaDiffThresh
+  pentox-myo_collagen
   initialSourceTGFbeta
   lowTGFbetaThresh
   highTGFbetaThresh
@@ -197,6 +199,12 @@ to differentiate-TGFbetaThresh
   ask fibroblasts [if patch_TGFbeta > TGFbetaDiffThresh [set breed myofibroblasts set shape "myofibroblast" set color 77 set size 5]]
   set number-of-fibroblasts count fibroblasts
   set number-of-myofibroblasts count myofibroblasts
+end
+
+; Addition of drug pentoxifylline
+to dose-pentox
+  set TGFbetaDiffThresh pentox-TGFbetaDiffThresh
+  set myo_collagen pentox-myo_collagen
 end
 
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
