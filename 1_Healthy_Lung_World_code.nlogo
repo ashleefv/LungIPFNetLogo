@@ -192,6 +192,7 @@ end
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
 
 to diffuse-TGFbeta-on-sources
+  diffuse patch_TGFbeta .01
 ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor scale-color blue patch_TGFbeta 0 100]]]
   ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 end
