@@ -19,6 +19,8 @@ globals
   lowTGFbetaThresh
   highTGFbetaThresh
   percent-pixel-collagen
+  uptakePercent
+  trailPercent
   clock
 ]
 
@@ -43,11 +45,13 @@ patches-own
 fibroblasts-own
 [
   TGFbeta_fb
+  prev-patch
 ]
 
 myofibroblasts-own
 [
   TGFbeta_myo
+  prev-patch
 ]
 
 ;-------- Set-up and clean code ------
@@ -72,9 +76,21 @@ to setup
   set highTGFbetaThresh 0.8 * initialSourceTGFbeta
   set myo_collagen 12
   set fibro_collagen 9
+  set uptakePercent 0.00001
+  set trailPercent 0.001
+  deposit-TGFbeta-on-sources
   reset-ticks
 end
 
+;------- GO!!!!!! ------
+
+to go
+  diffuse-TGFbeta
+  chemotax-fibroblasts
+  chemotax-myofibroblasts
+;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
+  secrete-spill-collagen
+end
 
 ;----- Fibroblast and myofibroblast subroutines ------
 
@@ -96,7 +112,7 @@ end
 ;Migrate fibroblasts randomly around the world
 
 to migrate-fibroblasts-randomly
-  ask fibroblasts [rt random-float 30 lt random-float 30 fd 1]
+  ask fibroblasts [set prev-patch patch-here rt random-float 30 lt random-float 30 fd 1]
 end
 
 ;Migrate fibroblasts randomly on purple patches only
@@ -107,24 +123,9 @@ to migrate-fibroblasts-on-non-alveoli
   ]
 end
 
-;Migrate a single fibroblast on purple patches only, this is used by migrate, chemotaxis etc.
-
-;to migrate-single-fibroblast-on-non-alveoli
-;
-;  let randDirection random-float 360
-;  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-;
-;  while [ [patch_alveoli] of destination = 1 ]
-;  [
-;         set randDirection random-float 360
-;         set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-;  ]
-;  set heading randDirection
-;  move-to destination
-;end
-
 to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and uptake
   ;pen-down
+  set prev-patch patch-here
   let randDirection random-float 360
   let uptake 0.2 * patch_TGFbeta
   set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
@@ -144,6 +145,7 @@ end
 
 to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and uptake
   ;pen-down
+  set prev-patch patch-here
   let randDirection random-float 360
   let uptake 0.2 * patch_TGFbeta
   set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
@@ -210,7 +212,10 @@ to chemotax-fibroblasts
     [
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
-          let start-patch patch-here
+          set prev-patch patch-here
+          let uptake uptakePercent * patch_TGFbeta
+          set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
+          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
           move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
@@ -220,7 +225,7 @@ to chemotax-fibroblasts
           ]
        while [ patch_alveoli = 1 ]
        [
-          move-to start-patch
+          move-to prev-patch
           move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
@@ -229,6 +234,9 @@ to chemotax-fibroblasts
           fd 1
           ]
        ]
+        ; update TGFbeta due to uptake and trail (chemotaxis case only)
+        let trail trailPercent * patch_TGFbeta
+        set patch_TGFbeta patch_TGFbeta + trail
       ]
       [
         migrate-single-fibroblast-on-non-alveoli ; random walk
@@ -247,7 +255,10 @@ to chemotax-myofibroblasts
     [
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
-          let start-patch patch-here
+          set prev-patch patch-here
+          let uptake uptakePercent * patch_TGFbeta
+          set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
+          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
           move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
@@ -257,7 +268,7 @@ to chemotax-myofibroblasts
           ]
        while [ patch_alveoli = 1 ]
        [
-          move-to start-patch
+          move-to prev-patch
           move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
@@ -266,6 +277,9 @@ to chemotax-myofibroblasts
           fd 1
           ]
        ]
+        ; update TGFbeta due to uptake and trail (chemotaxis case only)
+        let trail trailPercent * patch_TGFbeta
+        set patch_TGFbeta patch_TGFbeta + trail
       ]
       [
         migrate-single-myofibroblast-on-non-alveoli ; random walk
