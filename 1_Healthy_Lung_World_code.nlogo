@@ -704,6 +704,40 @@ percent-pixel-collagen
 1
 11
 
+BUTTON
+184
+61
+247
+94
+GO!
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+182
+109
+328
+142
+Show TGFbeta profile
+ask patches [if pcolor = 115 [set pcolor 117]]\nask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 @#$#@#$#@
 ## WHAT IS IT?
 
