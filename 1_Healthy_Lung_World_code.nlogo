@@ -12,7 +12,11 @@ globals
   initial_total_world_collagen
   myo_collagen
   fibro_collagen
+  initial_total_world_collagen
+  myo_collagen
+  fibro_collagen
   TGFbetaDiffThresh
+  initialSourceTGFbeta
   lowTGFbetaThresh
   highTGFbetaThresh
   clock
@@ -47,7 +51,7 @@ myofibroblasts-own
   TGFbeta_myo
 ]
 
-;-------- Set-up and cleand code ------
+;-------- Set-up and clean code ------
 
 to clear-world
   ca
@@ -61,8 +65,9 @@ to setup
   set initial_total_world_collagen total_world_collagen
   place-fibroblasts
   set TGFbetaDiffThresh 1
-  set lowTGFbetaThresh 0.1
-  set highTGFbetaThresh 1000
+  set initialSourceTGFbeta 5000
+  set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
+  set highTGFbetaThresh 0.8 * initialSourceTGFbeta
   set myo_collagen 12
   set fibro_collagen 9
   reset-ticks
@@ -76,12 +81,12 @@ end
 to place-fibroblasts
   crt initial-fibroblast-cells
   [
-    setxy (random-float world-width) (random-float world-height)
+    ;setxy (random-float world-width) (random-float world-height)
     set breed fibroblasts
     set shape "fibroblast"
     set color 27
     set size 5
-   move-to one-of patches with [patch_alveoli = 0]
+    move-to one-of patches with [patch_alveoli = 0]
   ]
   set number-of-fibroblasts count fibroblasts
 end
@@ -142,6 +147,13 @@ to proliferate-fibroblasts
   set number-of-fibroblasts count fibroblasts
 end
 
+;Proliferate myofibroblasts
+
+to proliferate-myofibroblasts
+  ask myofibroblasts [hatch 1 [migrate-single-myofibroblast-on-non-alveoli]]
+  set number-of-myofibroblasts count myofibroblasts
+end
+
 ; Kill fibroblasts that are overcrowded
 
 to apoptose-crowded-fibroblasts
@@ -149,10 +161,10 @@ to apoptose-crowded-fibroblasts
   set number-of-fibroblasts count fibroblasts
 end
 
-; Differentiate fibroblasts into myofibroblasts if they are lonely
+; Kill myofibroblasts that are overcrowded
 
-to differentiate-lonely-fibroblasts-into-myofibroblasts
-  ask fibroblasts [if sum [count turtles-here] of neighbors < 1 [set breed myofibroblasts set shape "myofibroblast" set color 77 set size 5]]
+to apoptose-crowded-myofibroblasts
+  ask myofibroblasts [if sum [count myofibroblasts-here] of neighbors > 6 [die]]
   set number-of-myofibroblasts count myofibroblasts
 end
 
@@ -165,31 +177,79 @@ to differentiate-TGFbetaThresh
 end
 
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
+; restricted to interstitial space ONLY
 
-to chemotax-fibroblasts; only the random walks are restircted to purple; I am working on making the uphill stay on purple too, this is not included yet
-  ask fibroblasts [ifelse patch_TGFbeta < lowTGFbetaThresh
-    [migrate-single-fibroblast-on-non-alveoli]
-    [ifelse patch_TGFbeta < highTGFbetaThresh
-      [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1] ; chemotaxis zone
-      ;[move-to patch-here  ;; go to patch center
-          ;let p max-one-of neighbors [patch_TGFbeta]
-        ;if [patch_alveoli] of p = 0 [
-          ;if [patch_TGFbeta] of p > patch_TGFbeta [
-          ;face p
-          ;rt random-float 30 lt random-float 30 fd 1
-          ;]
-      ;]]
-    [migrate-single-fibroblast-on-non-alveoli]]]
+to chemotax-fibroblasts
+  ask fibroblasts
+  [
+    ifelse patch_TGFbeta < lowTGFbetaThresh ; random walk
+    [
+      migrate-single-fibroblast-on-non-alveoli
+    ]
+    [
+      ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
+      [
+          let start-patch patch-here
+          move-to patch-here  ;; go to patch center
+          let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+          if [patch_TGFbeta] of p > patch_TGFbeta [
+          face p
+          rt random-float 30 lt random-float 30
+          fd 1
+          ] 
+       while [ patch_alveoli = 1 ]
+       [
+          move-to start-patch
+          move-to patch-here  ;; go to patch center
+          set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+          if [patch_TGFbeta] of p > patch_TGFbeta [
+          face p
+          rt random-float 30 lt random-float 30
+          fd 1
+          ] 
+       ]
+      ]
+      [
+        migrate-single-fibroblast-on-non-alveoli ; random walk
+      ]
+    ]
+  ]
 end
 
 to chemotax-myofibroblasts
-  ask myofibroblasts [uphill patch_TGFbeta]
-end
-
-to chemotax-myofibroblasts-within-threshold-amount-of-TGFbeta
-  ask myofibroblasts [ifelse patch_TGFbeta > 0.001
-    [uphill patch_TGFbeta set shape "star" set size 2 set color blue]
-    [set color green]
+  ask myofibroblasts
+  [
+    ifelse patch_TGFbeta < lowTGFbetaThresh ; random walk
+    [
+      migrate-single-myofibroblast-on-non-alveoli
+    ]
+    [
+      ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
+      [
+          let start-patch patch-here
+          move-to patch-here  ;; go to patch center
+          let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+          if [patch_TGFbeta] of p > patch_TGFbeta [
+          face p
+          rt random-float 30 lt random-float 30
+          fd 1
+          ] 
+       while [ patch_alveoli = 1 ]
+       [
+          move-to start-patch
+          move-to patch-here  ;; go to patch center
+          set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+          if [patch_TGFbeta] of p > patch_TGFbeta [
+          face p
+          rt random-float 30 lt random-float 30
+          fd 1
+          ] 
+       ]
+      ]
+      [
+        migrate-single-myofibroblast-on-non-alveoli ; random walk
+      ]
+    ]
   ]
 end
 
@@ -223,7 +283,7 @@ to deposit-TGFbeta-on-sources
     set color red
     set size 3
     move-to one-of patches with [patch_alveoli = 0]
-    set patch_TGFbeta 5000
+    set patch_TGFbeta initialSourceTGFbeta
   ]
 ;  ask TGFbeta-sources [die]
 end
