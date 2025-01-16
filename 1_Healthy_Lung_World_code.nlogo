@@ -7,11 +7,13 @@ extensions
 globals
 [
   number-of-fibroblasts
+  initial-fibroblast-cells
   number-of-myofibroblasts
   total_world_collagen ; summing collagen
   initial_total_world_collagen
   myo_collagen
   fibro_collagen
+  initial-number-of-sources
   TGFbetaDiffThresh
   initialSourceTGFbeta
   lowTGFbetaThresh
@@ -59,6 +61,9 @@ to setup
   random-seed new-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
   sum-collagen
+  deposit-TGFbeta-on-sources
+  set initial-fibroblast-cells 50
+  set initial-number-of-sources 90
   set initial_total_world_collagen total_world_collagen
   place-fibroblasts
   set TGFbetaDiffThresh 1
@@ -359,8 +364,8 @@ end
 
 
 to sum-collagen
-set total_world_collagen sum [total_patch_collagen] of patches
-calculate-percent-collagen
+  set total_world_collagen sum [total_patch_collagen] of patches
+  calculate-percent-collagen
 end
 
 to calculate-percent-collagen
@@ -369,7 +374,6 @@ to calculate-percent-collagen
   let fraction-collagen sum-patch-collagen / domain-size
   set percent-pixel-collagen 100 - 100 * fraction-collagen
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 936
@@ -416,9 +420,9 @@ NIL
 1
 
 BUTTON
-217
+39
 103
-322
+144
 136
 Set up world
 setup
@@ -431,21 +435,6 @@ NIL
 NIL
 NIL
 1
-
-SLIDER
-174
-56
-362
-89
-initial-fibroblast-cells
-initial-fibroblast-cells
-0
-100
-71.0
-1
-1
-NIL
-HORIZONTAL
 
 MONITOR
 1026
@@ -581,38 +570,6 @@ NIL
 NIL
 1
 
-SLIDER
-400
-57
-581
-90
-initial-number-of-sources
-initial-number-of-sources
-0
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
-BUTTON
-402
-105
-581
-138
-Place TGF-beta sources
-deposit-TGFbeta-on-sources
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 BUTTON
 38
 558
@@ -637,26 +594,6 @@ TEXTBOX
 35
 Initialisation
 20
-0.0
-1
-
-TEXTBOX
-239
-32
-302
-50
-Fibroblasts
-11
-0.0
-1
-
-TEXTBOX
-435
-32
-549
-50
-Sources of TGF-beta
-11
 0.0
 1
 
@@ -707,6 +644,28 @@ Collagen
 20
 0.0
 1
+
+MONITOR
+650
+211
+791
+256
+NIL
+total_world_collagen
+17
+1
+11
+
+MONITOR
+647
+156
+827
+201
+NIL
+percent-pixel-collagen
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
