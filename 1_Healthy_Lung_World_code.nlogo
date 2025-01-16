@@ -738,6 +738,40 @@ NIL
 NIL
 1
 
+BUTTON
+351
+61
+480
+94
+Dose Pentoxifylline
+dose-pentox
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+350
+109
+464
+142
+Doe Pirfenidone
+dose-pirf
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 @#$#@#$#@
 ## WHAT IS IT?
 
