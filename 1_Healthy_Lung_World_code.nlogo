@@ -47,7 +47,7 @@ to setup
   place-fibroblasts
   set TGFbetaDiffThresh 1
   set lowTGFbetaThresh 0.1
-  set highTGFbetaThresh 4000
+  set highTGFbetaThresh 1000
 end
 
 
@@ -132,7 +132,16 @@ end
 to chemotax-fibroblasts; only the random walks are restircted to purple; I am working on making the uphill stay on purple too, this is not included yet
   ask fibroblasts [ifelse patch_TGFbeta < lowTGFbetaThresh
     [migrate-single-fibroblast-on-non-alveoli]
-    [ifelse patch_TGFbeta < highTGFbetaThresh [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1]
+    [ifelse patch_TGFbeta < highTGFbetaThresh 
+      ;[uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1] ; chemotaxis zone
+      [move-to patch-here  ;; go to patch center
+          let p max-one-of neighbors [patch_TGFbeta]
+        if [pcolor] of p != 9.9[
+          if [patch_TGFbeta] of p > patch_TGFbeta [
+          face p
+          rt random-float 30 lt random-float 30 fd 1
+          ]
+      ]]
     [migrate-single-fibroblast-on-non-alveoli]]]
 end
 
