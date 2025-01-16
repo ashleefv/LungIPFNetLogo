@@ -24,6 +24,10 @@ globals
   uptakePercent
   trailPercent
   pirf-trailPercent
+  have-dosed-pentox
+  have-dosed-pirf
+  strategy-pentox
+  strategy-pirf
   clock
 ]
 
@@ -86,6 +90,14 @@ to setup
   set pentox-TGFbetaDiffThresh 1.5
   set pirf-trailPercent 0.0001
   deposit-TGFbeta-on-sources
+  set have-dosed-pirf 0
+  set have-dosed-pentox 0
+  set strategy-pentox 0
+  set strategy-pirf 0
+  ; strategy 0, no drug is applied
+  ; strategy 1, drug is applied at t = 0
+  ; strategy 2, drug is applied when percent-pixel-collagen >= 55
+  ; strategy 3, drug is appled when percent-pixel-collagen >= 65
   reset-ticks
 end
 
@@ -100,6 +112,37 @@ to go
     differentiate-TGFbetaThresh
   ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
     if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [secrete-spill-collagen]
+    ; ===============  APPLY DRUG STRATEGIES =============
+    if (have-dosed-pentox = 0) and (strategy-pentox != 0)
+    [
+     (ifelse
+        (strategy-pentox = 1 and percent-pixel-collagen >= 0) [
+          dose-pentox
+    ]
+    (strategy-pentox = 2 and percent-pixel-collagen >= 55) [
+          dose-pentox
+    ]
+    (strategy-pentox = 3 and percent-pixel-collagen >= 65) [
+          dose-pentox
+    ]
+    )
+    ]
+    ;~~~
+    if (have-dosed-pirf = 0) and (strategy-pirf != 0)
+    [
+     (ifelse
+        (strategy-pirf = 1 and percent-pixel-collagen >= 0) [
+          dose-pirf
+    ]
+    (strategy-pirf = 2 and percent-pixel-collagen >= 55) [
+          dose-pirf
+    ]
+    (strategy-pirf = 3 and percent-pixel-collagen >= 65) [
+          dose-pirf
+    ]
+    )
+    ]
+    ; ====================================================
     tick
   ]
   [
@@ -217,11 +260,13 @@ end
 to dose-pentox
   set TGFbetaDiffThresh pentox-TGFbetaDiffThresh
   set myo_collagen pentox-myo_collagen
+  set have-dosed-pentox 1
 end
 
 ; Addition of drug Pirfenidone
 to dose-pirf
   set trailPercent pirf-trailPercent
+  set have-dosed-pirf 1
 end
 
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
