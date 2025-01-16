@@ -42,7 +42,7 @@ to clear-world
 end
 
 to setup
-  import-world "HistologyHealthyLung.csv"  
+  import-world "HistologyHealthyLung.csv"
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
   place-fibroblasts
   set TGFbetaDiffThresh 1
@@ -130,7 +130,7 @@ end
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
 
 to chemotax-fibroblasts; only the random walks are restircted to purple; I am working on making the uphill stay on purple too, this is not included yet
-  ask fibroblasts [ifelse patch_TGFbeta < lowTGFbetaThresh 
+  ask fibroblasts [ifelse patch_TGFbeta < lowTGFbetaThresh
     [migrate-single-fibroblast-on-non-alveoli]
     [ifelse patch_TGFbeta < highTGFbetaThresh [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1]
     [migrate-single-fibroblast-on-non-alveoli]]]
@@ -199,7 +199,6 @@ end
 to myofibroblast-secrete-collagen
   ask myofibroblasts [set pcolor 116 set patch_collagen 12]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 773
@@ -567,6 +566,55 @@ BUTTON
 219
 Migrate fibroblasts on non-alveoli ONLY
 migrate-fibroblasts-on-non-alveoli
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+213
+194
+394
+227
+initial-number-of-sources
+initial-number-of-sources
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+455
+244
+634
+277
+Deposit TGFbeta on sources
+deposit-TGFbeta-on-sources
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+174
+549
+374
+582
+Diffuse TGFbeta on purple ONLY
+diffuse-TGFbeta-on-sources
 NIL
 1
 T
