@@ -1,3 +1,8 @@
+extensions
+[
+  palette
+]
+
 ;----- Defining breeds and variables -----
 globals
 [
@@ -5,12 +10,15 @@ globals
   number-of-myofibroblasts
   total_world_collagen
   TGFbetaDiffThresh
+  lowTGFbetaThresh
+  highTGFbetaThresh
   clock
 ]
 
 breed [ fibroblasts fibroblast ]
 breed [ myofibroblasts myofibroblast ]
 breed [ macrophages macrophage ]
+breed [TGFbeta-sources TGFbeta-source]
 
 patches-own
 [
@@ -38,6 +46,8 @@ to setup
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
   place-fibroblasts
   set TGFbetaDiffThresh 1
+  set lowTGFbetaThresh 0.1
+  set highTGFbetaThresh 4000
 end
 
 
@@ -64,25 +74,34 @@ to migrate-fibroblasts-randomly
   ask fibroblasts [rt random-float 30 lt random-float 30 fd 1]
 end
 
-;Migrate fibroblasts randomly on red patches only
+;Migrate fibroblasts randomly on purple patches only
 
 to migrate-fibroblasts-on-non-alveoli
   ask fibroblasts [
-    let randDirection random-float 360
-    let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-     while [ [patch_alveoli] of destination = 1 ]
-       [
+    migrate-single-fibroblast-on-non-alveoli
+  ]
+end
+
+;Migrate a single fibroblast on purple patches only, this is used by migrate, chemotaxis etc.
+
+to migrate-single-fibroblast-on-non-alveoli
+
+  let randDirection random-float 360
+  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+
+  while [ [patch_alveoli] of destination = 1 ]
+  [
          set randDirection random-float 360
          set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-       ]
-     move-to destination
-    ]
+  ]
+  set heading randDirection
+  move-to destination
 end
 
 ;Proliferate fibroblasts
 
 to proliferate-fibroblasts
-  ask fibroblasts [hatch 1 [right random 360 fd 1]]
+  ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
   set number-of-fibroblasts count fibroblasts
 end
 
@@ -108,10 +127,13 @@ to differentiate-TGFbetaThresh
   set number-of-myofibroblasts count myofibroblasts
 end
 
-; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis)
+; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
 
-to chemotax-fibroblasts
-  ask fibroblasts [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1]
+to chemotax-fibroblasts; only the random walks are restircted to purple; I am working on making the uphill stay on purple too, this is not included yet
+  ask fibroblasts [ifelse patch_TGFbeta < lowTGFbetaThresh 
+    [migrate-single-fibroblast-on-non-alveoli]
+    [ifelse patch_TGFbeta < highTGFbetaThresh [uphill patch_TGFbeta rt random-float 30 lt random-float 30 fd 1]
+    [migrate-single-fibroblast-on-non-alveoli]]]
 end
 
 to chemotax-myofibroblasts
@@ -144,11 +166,34 @@ to deposit-TGFbeta-on-white-patches
   ask patches [if pcolor = white [set patch_TGFbeta 5000]]
 end
 
+; The following code places and initial amount of growth factor on initial-number-of-sources purple patches randomly.
+
+to deposit-TGFbeta-on-sources
+  crt initial-number-of-sources
+  [
+    setxy (random-float world-width) (random-float world-height)
+    set breed TGFbeta-sources
+    set shape "target"
+    set color red
+    set size 3
+    move-to one-of patches with [patch_alveoli = 0]
+    set patch_TGFbeta 5000
+  ]
+;  ask TGFbeta-sources [die]
+end
+
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse".
 
 to diffuse-TGFbeta
   diffuse patch_TGFbeta .01
   ask patches [set pcolor scale-color blue patch_TGFbeta 0 100]
+end
+
+; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
+
+to diffuse-TGFbeta-on-sources
+;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor scale-color blue patch_TGFbeta 0 100]]]
+  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 end
 
 to myofibroblast-secrete-collagen
