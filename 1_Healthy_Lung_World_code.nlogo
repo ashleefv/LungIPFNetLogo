@@ -12,8 +12,6 @@ globals
   initial_total_world_collagen
   myo_collagen
   fibro_collagen
-  myo_collagen
-  fibro_collagen
   TGFbetaDiffThresh
   initialSourceTGFbeta
   lowTGFbetaThresh
@@ -46,7 +44,6 @@ fibroblasts-own
 
 myofibroblasts-own
 [
-
   TGFbeta_myo
 ]
 
@@ -139,6 +136,25 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   ;pen-up
 end
 
+to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and uptake
+  ;pen-down
+  let randDirection random-float 360
+  let uptake 0.2 * patch_TGFbeta
+  set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
+  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+  while [ [patch_alveoli] of destination = 1 ]
+  [
+    set randDirection random-float 360
+    set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    ]
+  set heading randDirection
+  move-to destination
+  let trail 0.1 * patch_TGFbeta
+  set patch_TGFbeta patch_TGFbeta + trail
+  ;pen-up
+end
+
 ;Proliferate fibroblasts
 
 to proliferate-fibroblasts
@@ -195,7 +211,7 @@ to chemotax-fibroblasts
           face p
           rt random-float 30 lt random-float 30
           fd 1
-          ] 
+          ]
        while [ patch_alveoli = 1 ]
        [
           move-to start-patch
@@ -205,7 +221,7 @@ to chemotax-fibroblasts
           face p
           rt random-float 30 lt random-float 30
           fd 1
-          ] 
+          ]
        ]
       ]
       [
@@ -232,7 +248,7 @@ to chemotax-myofibroblasts
           face p
           rt random-float 30 lt random-float 30
           fd 1
-          ] 
+          ]
        while [ patch_alveoli = 1 ]
        [
           move-to start-patch
@@ -242,7 +258,7 @@ to chemotax-myofibroblasts
           face p
           rt random-float 30 lt random-float 30
           fd 1
-          ] 
+          ]
        ]
       ]
       [
@@ -284,7 +300,7 @@ to deposit-TGFbeta-on-sources
     move-to one-of patches with [patch_alveoli = 0]
     set patch_TGFbeta initialSourceTGFbeta
   ]
-;  ask TGFbeta-sources [die]
+  ask TGFbeta-sources [die]
 end
 
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
@@ -292,7 +308,7 @@ end
 to diffuse-TGFbeta
   diffuse patch_TGFbeta .01
 ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor scale-color blue patch_TGFbeta 0 100]]]
-  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
+;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 end
 
 ;to myofibroblast-secrete-collagen
@@ -500,7 +516,7 @@ BUTTON
 688
 Secrete and spill collagen
 secrete-spill-collagen
-NIL
+T
 1
 T
 OBSERVER
@@ -545,7 +561,7 @@ BUTTON
 280
 Migrate fibroblasts on non-alveoli ONLY
 migrate-fibroblasts-on-non-alveoli
-NIL
+T
 1
 T
 OBSERVER
@@ -593,7 +609,7 @@ BUTTON
 333
 591
 Diffuse TGFbeta AND chemotax fibroblasts
-diffuse-TGFbeta\nchemotax-fibroblasts
+diffuse-TGFbeta\nchemotax-fibroblasts\nchemotax-myofibroblasts\nask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 T
 1
 T
