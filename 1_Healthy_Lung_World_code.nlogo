@@ -16,6 +16,7 @@ globals
   initialSourceTGFbeta
   lowTGFbetaThresh
   highTGFbetaThresh
+  percent-pixel-collagen
   clock
 ]
 
@@ -358,8 +359,17 @@ end
 
 
 to sum-collagen
-  set total_world_collagen sum [total_patch_collagen] of patches
+set total_world_collagen sum [total_patch_collagen] of patches
+calculate-percent-collagen
 end
+
+to calculate-percent-collagen
+  let sum-patch-collagen sum [patch_alveoli] of patches
+  let domain-size world-width * world-height
+  let fraction-collagen sum-patch-collagen / domain-size
+  set percent-pixel-collagen 100 - 100 * fraction-collagen
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 936
