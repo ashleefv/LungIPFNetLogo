@@ -38,10 +38,13 @@ patches-own
 
 fibroblasts-own
 [
+  TGFbeta_fb
 ]
 
 myofibroblasts-own
 [
+
+  TGFbeta_myo
 ]
 
 ;-------- Set-up and cleand code ------
@@ -52,6 +55,7 @@ end
 
 to setup
   import-world "HistologyHealthyLung.csv"
+  random-seed new-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
   sum-collagen
   set initial_total_world_collagen total_world_collagen
@@ -77,7 +81,7 @@ to place-fibroblasts
     set shape "fibroblast"
     set color 27
     set size 5
-    while [ patch_alveoli = 1 ] [ setxy (random-float world-width) (random-float world-height) ]
+   move-to one-of patches with [patch_alveoli = 0]
   ]
   set number-of-fibroblasts count fibroblasts
 end
@@ -98,18 +102,37 @@ end
 
 ;Migrate a single fibroblast on purple patches only, this is used by migrate, chemotaxis etc.
 
-to migrate-single-fibroblast-on-non-alveoli
+;to migrate-single-fibroblast-on-non-alveoli
+;
+;  let randDirection random-float 360
+;  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+;
+;  while [ [patch_alveoli] of destination = 1 ]
+;  [
+;         set randDirection random-float 360
+;         set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+;  ]
+;  set heading randDirection
+;  move-to destination
+;end
 
+to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and uptake
+  ;pen-down
   let randDirection random-float 360
+  let uptake 0.2 * patch_TGFbeta
+  set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
   let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-
   while [ [patch_alveoli] of destination = 1 ]
   [
-         set randDirection random-float 360
-         set destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-  ]
+    set randDirection random-float 360
+    set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    ]
   set heading randDirection
   move-to destination
+  let trail 0.1 * patch_TGFbeta
+  set patch_TGFbeta patch_TGFbeta + trail
+  ;pen-up
 end
 
 ;Proliferate fibroblasts
@@ -205,16 +228,9 @@ to deposit-TGFbeta-on-sources
 ;  ask TGFbeta-sources [die]
 end
 
-; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse".
-
-to diffuse-TGFbeta
-  diffuse patch_TGFbeta .01
-  ask patches [set pcolor scale-color blue patch_TGFbeta 0 100]
-end
-
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
 
-to diffuse-TGFbeta-on-sources
+to diffuse-TGFbeta
   diffuse patch_TGFbeta .01
 ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor scale-color blue patch_TGFbeta 0 100]]]
   ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
@@ -229,32 +245,32 @@ to secrete-spill-collagen
 
   ; current patch accumuates collagen
   ask patches [accumulate-collagen]
-  
+
   ; spill to neighbors to accumulate collagen there
-  ask patches 
+  ask patches
   [ set myo_multiplier count myofibroblasts-here
     set fibro_multiplier count fibroblasts-here
     let myo_multiplier_neighbor myo_multiplier
     let fibro_multiplier_neighbor fibro_multiplier
-    
+
     ifelse  count myofibroblasts-here > 0 ; includes myofibroblast only and combination of both types
-    [ ask neighbors 
+    [ ask neighbors
       [ if patch_alveoli = 1
-        [set pcolor 117 set patch_alveoli 0]
-         
+        [set pcolor 115 set patch_alveoli 0]
+
         set myo_multiplier myo_multiplier_neighbor
-        accumulate-collagen 
+        accumulate-collagen
       ]
     ]
     [ if  count fibroblasts-here > 0 ; includes fibroblasts only case
-      [ ask neighbors 
+      [ ask neighbors
         [ if patch_alveoli = 1
-          [set pcolor 117 set patch_alveoli 0]
+          [set pcolor 115 set patch_alveoli 0]
           set fibro_multiplier fibro_multiplier_neighbor
           accumulate-collagen
         ]
       ]
-    ] 
+    ]
   ]
   sum-collagen
   tick
@@ -271,10 +287,10 @@ to sum-collagen
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-773
-64
-1286
-578
+936
+157
+1449
+671
 -1
 -1
 5.0
@@ -298,10 +314,10 @@ ticks
 30.0
 
 BUTTON
-21
-19
-123
-52
+38
+56
+140
+89
 Clear world
 clear-world
 NIL
@@ -315,10 +331,10 @@ NIL
 1
 
 BUTTON
-20
-77
-128
-110
+217
+103
+322
+136
 Set up world
 setup
 NIL
@@ -332,10 +348,10 @@ NIL
 1
 
 SLIDER
-191
-30
-379
-63
+174
+56
+362
+89
 initial-fibroblast-cells
 initial-fibroblast-cells
 0
@@ -347,10 +363,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-397
-25
-517
-70
+1026
+93
+1146
+138
 No. of fibroblasts
 number-of-fibroblasts
 17
@@ -358,27 +374,10 @@ number-of-fibroblasts
 11
 
 BUTTON
-25
-187
-173
-220
-Migrate fibroblasts
-migrate-fibroblasts-randomly
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-24
-237
-189
-270
+38
+295
+203
+328
 Proliferate fibroblasts
 proliferate-fibroblasts
 NIL
@@ -392,10 +391,10 @@ NIL
 1
 
 BUTTON
-26
-285
-244
-318
+37
+343
+255
+376
 Apoptose crowded fibroblasts
 apoptose-crowded-fibroblasts
 NIL
@@ -409,44 +408,10 @@ NIL
 1
 
 BUTTON
-25
-339
-380
-372
-Differentiate lonely fibroblasts into myofibroblasts
-differentiate-lonely-fibroblasts-into-myofibroblasts
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-30
-455
-128
-488
-Draw white
-draw-white
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-31
-550
-160
-583
+38
+507
+167
+540
 Diffuse TGFbeta
 diffuse-TGFbeta
 NIL
@@ -459,139 +424,24 @@ NIL
 NIL
 1
 
-BUTTON
-31
-503
-219
-536
-Deposit TGFbeta on white
-deposit-TGFbeta-on-white-patches
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
 TEXTBOX
-31
-155
-409
-183
+37
+219
+415
+247
 Migration, proliferation, apoptosis, & differentiation
 11
 0.0
 1
 
-TEXTBOX
-32
-424
-182
-442
-TGFbeta deposits
-11
-0.0
-1
-
 BUTTON
-396
-446
-562
-479
-Chemotax fibroblasts
-chemotax-fibroblasts
+41
+655
+269
+688
+Secrete and spill collagen
+secrete-spill-collagen
 NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-TEXTBOX
-397
-420
-582
-448
-Chemotaxis towards TGFbeta
-11
-0.0
-1
-
-BUTTON
-395
-498
-587
-531
-Chemotax myofibroblasts
-chemotax-myofibroblasts
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-395
-547
-690
-580
-Chemotax myofibroblasts within threshold
-chemotax-myofibroblasts-within-threshold-amount-of-TGFbeta
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-TEXTBOX
-38
-625
-188
-643
-Collagen
-11
-0.0
-1
-
-BUTTON
-33
-653
-261
-686
-NIL
-myofibroblast-secrete-collagen
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-217
-94
-333
-127
-Draw red (fix)
-draw-red
-T
 1
 T
 OBSERVER
@@ -602,10 +452,10 @@ NIL
 1
 
 MONITOR
-544
-25
-691
-70
+1173
+93
+1320
+138
 No. of myofibroblasts
 number-of-myofibroblasts
 17
@@ -613,10 +463,10 @@ number-of-myofibroblasts
 11
 
 BUTTON
-442
-339
-703
-372
+36
+392
+297
+425
 Differentiate fibroblasts with TGFbeta
 differentiate-TGFbetaThresh
 NIL
@@ -630,10 +480,10 @@ NIL
 1
 
 BUTTON
-452
-186
-690
-219
+37
+247
+275
+280
 Migrate fibroblasts on non-alveoli ONLY
 migrate-fibroblasts-on-non-alveoli
 NIL
@@ -647,10 +497,10 @@ NIL
 1
 
 SLIDER
-213
-194
-394
-227
+400
+57
+581
+90
 initial-number-of-sources
 initial-number-of-sources
 0
@@ -662,11 +512,11 @@ NIL
 HORIZONTAL
 
 BUTTON
-455
-244
-634
-277
-Deposit TGFbeta on sources
+402
+105
+581
+138
+Place TGF-beta sources
 deposit-TGFbeta-on-sources
 NIL
 1
@@ -679,13 +529,13 @@ NIL
 1
 
 BUTTON
-174
-549
-374
-582
-Diffuse TGFbeta on purple ONLY
-diffuse-TGFbeta-on-sources
-NIL
+38
+558
+333
+591
+Diffuse TGFbeta AND chemotax fibroblasts
+diffuse-TGFbeta\nchemotax-fibroblasts
+T
 1
 T
 OBSERVER
@@ -695,21 +545,82 @@ NIL
 NIL
 1
 
-BUTTON
-245
-509
-537
-542
-NIL
-diffuse-TGFbeta-on-sources\nchemotax-fibroblasts
-T
+TEXTBOX
+37
+10
+187
+35
+Initialisation
+20
+0.0
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+
+TEXTBOX
+239
+32
+302
+50
+Fibroblasts
+11
+0.0
+1
+
+TEXTBOX
+435
+32
+549
+50
+Sources of TGF-beta
+11
+0.0
+1
+
+TEXTBOX
+36
+183
+235
+233
+Fibroblasts actions
+20
+0.0
+1
+
+PLOT
+629
+287
+902
+557
+plot 1
+Time
+Amount of Collagen
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plotxy ticks total_world_collagen"
+
+TEXTBOX
+39
+456
+122
+481
+TGFbeta
+20
+0.0
+1
+
+TEXTBOX
+41
+615
+191
+640
+Collagen
+20
+0.0
 1
 
 @#$#@#$#@
