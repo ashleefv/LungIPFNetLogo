@@ -23,6 +23,7 @@ globals
   percent-pixel-collagen
   uptakePercent
   trailPercent
+  pirf-trailPercent
   clock
 ]
 
@@ -80,6 +81,7 @@ to setup
   set fibro_collagen 9
   set uptakePercent 0.00001
   set trailPercent 0.001
+  set pirf-trailPercent 0.0001
   deposit-TGFbeta-on-sources
   reset-ticks
 end
@@ -205,6 +207,11 @@ end
 to dose-pentox
   set TGFbetaDiffThresh pentox-TGFbetaDiffThresh
   set myo_collagen pentox-myo_collagen
+end
+
+; Addition of drug Pirfenidone
+to dose-pirf
+  set trailPercent pirf-trailPercent
 end
 
 ; Move fibroblasts and myofibroblasts towards higher concentration of TGFbeta (chemotaxis), if lowTGFbetaThresh < TGFbeta < highTGFbetaThresh; randomly otherwise
