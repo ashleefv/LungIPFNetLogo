@@ -64,6 +64,7 @@ to clear-world
 end
 
 to setup
+  set percent-pixel-collagen 0
   import-world "HistologyHealthyLung.csv"
   random-seed new-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
@@ -759,9 +760,9 @@ NIL
 BUTTON
 350
 109
-464
+470
 142
-Doe Pirfenidone
+Dose Pirfenidone
 dose-pirf
 NIL
 1
