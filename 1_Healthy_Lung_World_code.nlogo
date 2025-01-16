@@ -8,7 +8,10 @@ globals
 [
   number-of-fibroblasts
   number-of-myofibroblasts
-  total_world_collagen
+  total_world_collagen ; summing collagen
+  initial_total_world_collagen
+  myo_collagen
+  fibro_collagen
   TGFbetaDiffThresh
   lowTGFbetaThresh
   highTGFbetaThresh
@@ -22,7 +25,13 @@ breed [TGFbeta-sources TGFbeta-source]
 
 patches-own
 [
-  patch_collagen
+  total_patch_collagen
+  immediate_patch_collagen
+  old_collagen
+  new_myo_collagen
+  myo_multiplier
+  new_fibro_collagen
+  fibro_multiplier
   patch_TGFbeta
   patch_alveoli
 ]
@@ -43,11 +52,16 @@ end
 
 to setup
   import-world "HistologyHealthyLung.csv"
-  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0] [set patch_alveoli 1] ]
+  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
+  sum-collagen
+  set initial_total_world_collagen total_world_collagen
   place-fibroblasts
   set TGFbetaDiffThresh 1
   set lowTGFbetaThresh 0.1
   set highTGFbetaThresh 1000
+  set myo_collagen 12
+  set fibro_collagen 9
+  reset-ticks
 end
 
 
@@ -206,8 +220,54 @@ to diffuse-TGFbeta-on-sources
   ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 end
 
-to myofibroblast-secrete-collagen
-  ask myofibroblasts [set pcolor 116 set patch_collagen 12]
+;to myofibroblast-secrete-collagen
+;  ask myofibroblasts [set pcolor 116 set patch_collagen 12]
+;end
+
+to secrete-spill-collagen
+  ask turtles[move-to patch-here]
+
+  ; current patch accumuates collagen
+  ask patches [accumulate-collagen]
+  
+  ; spill to neighbors to accumulate collagen there
+  ask patches 
+  [ set myo_multiplier count myofibroblasts-here
+    set fibro_multiplier count fibroblasts-here
+    let myo_multiplier_neighbor myo_multiplier
+    let fibro_multiplier_neighbor fibro_multiplier
+    
+    ifelse  count myofibroblasts-here > 0 ; includes myofibroblast only and combination of both types
+    [ ask neighbors 
+      [ if patch_alveoli = 1
+        [set pcolor 117 set patch_alveoli 0]
+         
+        set myo_multiplier myo_multiplier_neighbor
+        accumulate-collagen 
+      ]
+    ]
+    [ if  count fibroblasts-here > 0 ; includes fibroblasts only case
+      [ ask neighbors 
+        [ if patch_alveoli = 1
+          [set pcolor 117 set patch_alveoli 0]
+          set fibro_multiplier fibro_multiplier_neighbor
+          accumulate-collagen
+        ]
+      ]
+    ] 
+  ]
+  sum-collagen
+  tick
+end
+
+to accumulate-collagen
+  set old_collagen total_patch_collagen
+  set total_patch_collagen old_collagen + myo_multiplier * myo_collagen + fibro_multiplier * fibro_collagen
+end
+
+
+to sum-collagen
+  set total_world_collagen sum [total_patch_collagen] of patches
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
