@@ -81,6 +81,8 @@ to setup
   set fibro_collagen 9
   set uptakePercent 0.00001
   set trailPercent 0.001
+  set pentox-myo_collagen 5
+  set pentox-TGFbetaDiffThresh 1.5
   set pirf-trailPercent 0.0001
   deposit-TGFbeta-on-sources
   reset-ticks
