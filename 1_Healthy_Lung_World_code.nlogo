@@ -12,7 +12,6 @@ globals
   initial_total_world_collagen
   myo_collagen
   fibro_collagen
-  initial_total_world_collagen
   myo_collagen
   fibro_collagen
   TGFbetaDiffThresh
