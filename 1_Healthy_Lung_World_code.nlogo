@@ -91,11 +91,17 @@ end
 ;------- GO!!!!!! ------
 
 to go
-  diffuse-TGFbeta
-  chemotax-fibroblasts
-  chemotax-myofibroblasts
-;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
-  secrete-spill-collagen
+  ifelse percent-pixel-collagen < 50
+  [
+    diffuse-TGFbeta
+    chemotax-fibroblasts
+    chemotax-myofibroblasts
+  ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
+    secrete-spill-collagen
+    tick
+  ]
+  [
+  ]
 end
 
 ;----- Fibroblast and myofibroblast subroutines ------
@@ -385,7 +391,7 @@ to secrete-spill-collagen
     ]
   ]
   sum-collagen
-  tick
+  ;tick
 end
 
 to accumulate-collagen
