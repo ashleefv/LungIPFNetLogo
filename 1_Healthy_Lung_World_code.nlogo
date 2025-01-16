@@ -73,7 +73,7 @@ to setup
   set initial-number-of-sources 90
   set initial_total_world_collagen total_world_collagen
   place-fibroblasts
-  set TGFbetaDiffThresh 1
+  set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
   set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
   set highTGFbetaThresh 0.8 * initialSourceTGFbeta
@@ -91,13 +91,14 @@ end
 ;------- GO!!!!!! ------
 
 to go
-  ifelse percent-pixel-collagen < 50
+  ifelse percent-pixel-collagen < 75
   [
     diffuse-TGFbeta
     chemotax-fibroblasts
     chemotax-myofibroblasts
+    differentiate-TGFbetaThresh
   ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
-    secrete-spill-collagen
+    if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [secrete-spill-collagen]
     tick
   ]
   [
@@ -711,7 +712,7 @@ BUTTON
 94
 GO!
 go
-NIL
+T
 1
 T
 OBSERVER
