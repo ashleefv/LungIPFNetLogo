@@ -62,9 +62,6 @@ for i = 1:length(AB_wo)
 end
 
 
-total1=B'; total2=E'; total3=H'; total4=K'; total5=N'; total6=Q'; total7=T'; total8=W'; total9=Z';
-total10=AC';
-
 
 %% Pixel
 pixel1_wo = rmmissing(C);
@@ -119,6 +116,59 @@ for j = 1:length(pixel10_wo)
 end
 
 
+
+
+total1_wo = rmmissing(B);
+for j = 1:length(total1_wo)
+    total1(j)=str2num(total1_wo{j});
+end
+
+total2_wo = rmmissing(E);
+for j = 1:length(total2_wo)
+    total2(j)=str2num(total2_wo{j});
+end
+
+total3_wo = rmmissing(H);
+for j = 1:length(total3_wo)
+    total3(j)=str2num(total3_wo{j});
+end
+
+total4_wo = rmmissing(K);
+for j = 1:length(total4_wo)
+    total4(j)=str2num(total4_wo{j});
+end
+
+total5= N;
+% for j = 1:length(total5_wo)
+%     total5(j)=str2num(total5_wo{j});
+% end
+
+total6_wo = rmmissing(Q);
+for j = 1:length(total6_wo)
+    total6(j)=str2num(total6_wo{j});
+end
+
+total7_wo = rmmissing(T);
+for j = 1:length(total7_wo)
+    total7(j)=str2num(total7_wo{j});
+end
+
+total8_wo = rmmissing(W);
+for j = 1:length(total8_wo)
+    total8(j)=str2num(total8_wo{j});
+end
+
+total9_wo = rmmissing(Z);
+for j = 1:length(total9_wo)
+    total9(j)=str2num(total9_wo{j});
+end
+
+total10_wo = rmmissing(AC);
+for j = 1:length(total10_wo)
+    total10(j)=str2num(total10_wo{j});
+end
+ 
+
  figure(1)
  plot(step1,pixel1,'LineWidth',2)
 hold on
@@ -131,4 +181,18 @@ plot(step7,pixel7,'LineWidth',2)
 plot(step8,pixel8,'LineWidth',2)
 plot(step9,pixel9,'LineWidth',2)
 plot(step10,pixel10,'LineWidth',2)
+grid on
+
+figure(2)
+ plot(step1,total1,'LineWidth',2)
+hold on
+plot(step2,total2,'LineWidth',2)
+plot(step3,total3,'LineWidth',2)
+plot(step4,total4,'LineWidth',2)
+plot(step5,total5,'LineWidth',2)
+plot(step6,total6,'LineWidth',2)
+plot(step7,total7,'LineWidth',2)
+plot(step8,total8,'LineWidth',2)
+plot(step9,total9,'LineWidth',2)
+plot(step10,total10,'LineWidth',2)
 grid on
