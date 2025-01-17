@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE experiments SYSTEM "behaviorspace.dtd">
+<experiments>
+  <experiment name="experiment02" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <postRun>ca</postRun>
+    <exitCondition>percent-pixel-collagen &gt;= 75</exitCondition>
+    <metric>total_world_collagen</metric>
+    <metric>percent-pixel-collagen</metric>
+    <metric>number-of-fibroblasts</metric>
+    <metric>number-of-myofibroblasts</metric>
+    <subExperiment>
+      <enumeratedValueSet variable="strategy-pentox">
+        <value value="0"/>
+        <value value="1"/>
+        <value value="2"/>
+        <value value="3"/>
+      </enumeratedValueSet>
+      <enumeratedValueSet variable="strategy-pirf">
+        <value value="0"/>
+        <value value="1"/>
+        <value value="2"/>
+        <value value="3"/>
+      </enumeratedValueSet>
+    </subExperiment>
+  </experiment>
+</experiments>
