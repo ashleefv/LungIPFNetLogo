@@ -1,13 +1,7 @@
-extensions
-[
-  palette
-]
-
 ;----- Defining breeds and variables -----
 globals
 [
   number-of-fibroblasts
-  initial-fibroblast-cells
   number-of-myofibroblasts
   total_world_collagen ; summing collagen
   initial_total_world_collagen
@@ -26,15 +20,27 @@ globals
   pirf-trailPercent
   have-dosed-pentox
   have-dosed-pirf
+  clock
+  starting-seed
+  ;===== To avoid infinite loops in the case of single-patch collagen "islands"
+  max-tries-for-chemotax
+  max-tries-for-migrate
+  ;===== The following globals can become sliders for behavior space
+  percent-pixel-collagen-thresh
+  initial-fibroblast-cells
   strategy-pentox
   strategy-pirf
-  clock
+]
+
+extensions
+[
+  palette
 ]
 
 breed [ fibroblasts fibroblast ]
 breed [ myofibroblasts myofibroblast ]
 breed [ macrophages macrophage ]
-breed [TGFbeta-sources TGFbeta-source]
+breed [ TGFbeta-sources TGFbeta-source ]
 
 patches-own
 [
@@ -53,31 +59,46 @@ fibroblasts-own
 [
   TGFbeta_fb
   prev-patch
+  tries-for-chemotax
+  tries-for-migrate
 ]
 
 myofibroblasts-own
 [
   TGFbeta_myo
   prev-patch
+  tries-for-chemotax
+  tries-for-migrate
 ]
 
 ;-------- Set-up and clean code ------
 
 to clear-world
-  ca
+  clear-all
 end
 
 to setup
+  ;===== Import world from .csv and set patch variables
   set percent-pixel-collagen 0
   import-world "HistologyHealthyLung.csv"
-  random-seed new-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
   sum-collagen
-  deposit-TGFbeta-on-sources
+  ;===== Random seed
+  set starting-seed new-seed
+  random-seed starting-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
+  ;===== Comment if using sliders
+  set percent-pixel-collagen-thresh 75
   set initial-fibroblast-cells 50
+  set strategy-pentox 0
+  set strategy-pirf 0
+  ;_____
+  ;; strategy 0, no drug is applied
+  ;; strategy 1, drug is applied at t = 0
+  ;; strategy 2, drug is applied when percent-pixel-collagen >= 55
+  ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
+  ;===== Set parameters
   set initial-number-of-sources 90
   set initial_total_world_collagen total_world_collagen
-  place-fibroblasts
   set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
   set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
@@ -89,30 +110,28 @@ to setup
   set pentox-myo_collagen 5
   set pentox-TGFbetaDiffThresh 1.5
   set pirf-trailPercent 0.0001
-  deposit-TGFbeta-on-sources
   set have-dosed-pirf 0
   set have-dosed-pentox 0
-  set strategy-pentox 0
-  set strategy-pirf 0
-  ; strategy 0, no drug is applied
-  ; strategy 1, drug is applied at t = 0
-  ; strategy 2, drug is applied when percent-pixel-collagen >= 55
-  ; strategy 3, drug is appled when percent-pixel-collagen >= 65
+  set max-tries-for-chemotax 10
+  set max-tries-for-migrate 10
+  ;===== Initialize
+  place-fibroblasts
+  deposit-TGFbeta-on-sources
   reset-ticks
 end
 
 ;------- GO!!!!!! ------
 
 to go
-  ifelse percent-pixel-collagen < 75
+  ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
     diffuse-TGFbeta
     chemotax-fibroblasts
     chemotax-myofibroblasts
     differentiate-TGFbetaThresh
-  ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
+    ;ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
     if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [secrete-spill-collagen]
-    ; ===============  APPLY DRUG STRATEGIES =============
+    ;===============  APPLY DRUG STRATEGIES =============
     if (have-dosed-pentox = 0) and (strategy-pentox != 0)
     [
      (ifelse
@@ -142,10 +161,11 @@ to go
     ]
     )
     ]
-    ; ====================================================
+    ;====================================================
     tick
   ]
   [
+    stop
   ]
 end
 
@@ -188,10 +208,12 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
   set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
   let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-  while [ [patch_alveoli] of destination = 1 ]
+  set tries-for-migrate 1
+  while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
   [
     set randDirection random-float 360
     set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    set tries-for-migrate tries-for-migrate + 1
     ]
   set heading randDirection
   move-to destination
@@ -208,10 +230,12 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
   set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
   set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
   let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
-  while [ [patch_alveoli] of destination = 1 ]
+  set tries-for-migrate 1
+  while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
   [
     set randDirection random-float 360
     set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    set tries-for-migrate tries-for-migrate + 1
     ]
   set heading randDirection
   move-to destination
@@ -293,7 +317,8 @@ to chemotax-fibroblasts
           rt random-float 30 lt random-float 30
           fd 1
           ]
-       while [ patch_alveoli = 1 ]
+        set tries-for-chemotax 1
+       while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
           move-to patch-here  ;; go to patch center
@@ -303,6 +328,7 @@ to chemotax-fibroblasts
           rt random-float 30 lt random-float 30
           fd 1
           ]
+          set tries-for-chemotax tries-for-chemotax + 1
        ]
         ; update TGFbeta due to uptake and trail (chemotaxis case only)
         let trail trailPercent * patch_TGFbeta
@@ -336,7 +362,8 @@ to chemotax-myofibroblasts
           rt random-float 30 lt random-float 30
           fd 1
           ]
-       while [ patch_alveoli = 1 ]
+        set tries-for-chemotax 1
+       while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
           move-to patch-here  ;; go to patch center
@@ -346,6 +373,7 @@ to chemotax-myofibroblasts
           rt random-float 30 lt random-float 30
           fd 1
           ]
+          set tries-for-chemotax tries-for-chemotax + 1
        ]
         ; update TGFbeta due to uptake and trail (chemotaxis case only)
         let trail trailPercent * patch_TGFbeta
