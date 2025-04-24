@@ -108,7 +108,7 @@ to setup
   set uptakePercent 0.00001
   set trailPercent 0.001
   set pentox-myo_collagen 5
-  set pentox-TGFbetaDiffThresh 1.5
+  set pentox-TGFbetaDiffThresh 1.5 * TGFbetaDiffThresh
   set pirf-trailPercent 0.0001
   set have-dosed-pirf 0
   set have-dosed-pentox 0
