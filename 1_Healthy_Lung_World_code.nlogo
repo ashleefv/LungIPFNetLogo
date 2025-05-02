@@ -8,6 +8,7 @@ globals
   myo_collagen
   fibro_collagen
   initial-number-of-sources
+  ; initial-number-of-macrophages
   TGFbetaDiffThresh
   pentox-TGFbetaDiffThresh
   pentox-myo_collagen
@@ -26,10 +27,19 @@ globals
   max-tries-for-chemotax
   max-tries-for-migrate
   ;===== The following globals can become sliders for behavior space
-  percent-pixel-collagen-thresh
-  initial-fibroblast-cells
-  strategy-pentox
-  strategy-pirf
+  ;percent-pixel-collagen-thresh
+  ;initial-fibroblast-cells
+  ;strategy-pentox
+  ;strategy-pirf
+  MMP-degradation-rate    ; Collagen degraded per MMP unit per tick
+  MMP-secretion-rate      ; MMPs secreted per macrophage per tick
+  MMP-decay-rate          ; Rate of MMP concentration decay
+  ;===== Diffusion-related and units stuff
+  dt ; (units sec?)
+  h ; (dx = dy = h units microns?)
+  TGFbeta-diffusion-coefficient ; c^2 in the heat equation (units microns^2/s?)
+  TGFbeta-sigma ;
+  TGFbeta-diffusion-number ; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
 ]
 
 extensions
@@ -53,6 +63,7 @@ patches-own
   fibro_multiplier
   patch_TGFbeta
   patch_alveoli
+  MMP-concentration
 ]
 
 fibroblasts-own
@@ -87,10 +98,10 @@ to setup
   set starting-seed new-seed
   random-seed starting-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ;===== Comment if using sliders
-  set percent-pixel-collagen-thresh 75
-  set initial-fibroblast-cells 50
-  set strategy-pentox 0
-  set strategy-pirf 0
+  ;set percent-pixel-collagen-thresh 75
+  ;set initial-fibroblast-cells 50
+  ;set strategy-pentox 0
+  ;set strategy-pirf 0
   ;_____
   ;; strategy 0, no drug is applied
   ;; strategy 1, drug is applied at t = 0
@@ -98,6 +109,7 @@ to setup
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 90
+  ;set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
   set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
@@ -107,6 +119,15 @@ to setup
   set fibro_collagen 9
   set uptakePercent 0.00001
   set trailPercent 0.001
+  create-macrophages initial-number-of-macrophages [  ; Add macrophages
+    set color blue
+    set size 4
+    move-to one-of patches with [patch_alveoli = 0]
+  ]
+  set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
+  set MMP-secretion-rate 0.8      ; Based on macrophage activation
+  set MMP-decay-rate  0.05         ; MMP half-life 0.1
+  ask patches [set MMP-concentration 0]
   set pentox-myo_collagen 5
   set pentox-TGFbetaDiffThresh 1.5 * TGFbetaDiffThresh
   set pirf-trailPercent 0.0001
@@ -114,6 +135,11 @@ to setup
   set have-dosed-pentox 0
   set max-tries-for-chemotax 10
   set max-tries-for-migrate 10
+  set dt 1 ; search literature for better value
+  set h 1 ; search literature for better value
+  set TGFbeta-diffusion-coefficient 5; c^2 in the heat equation (units microns^2/s?) search literature for better value
+  set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
+  set TGFbeta-diffusion-number 4 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
   ;===== Initialize
   place-fibroblasts
   deposit-TGFbeta-on-sources
@@ -126,11 +152,12 @@ to go
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
     diffuse-TGFbeta
+    manage-MMP-dynamics
     chemotax-fibroblasts
     chemotax-myofibroblasts
     differentiate-TGFbetaThresh
     ;ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
-    if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [secrete-spill-collagen]
+    if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [ secrete-spill-collagen]
     ;===============  APPLY DRUG STRATEGIES =============
     if (have-dosed-pentox = 0) and (strategy-pentox != 0)
     [
@@ -486,6 +513,47 @@ to calculate-percent-collagen
   let fraction-collagen sum-patch-collagen / domain-size
   set percent-pixel-collagen 100 - 100 * fraction-collagen
 end
+
+;=== DIKSHA: This is the implementation of the MMPS that degrade the collagen
+
+to manage-MMP-dynamics
+  secrete-MMPs
+  diffuse-MMPs
+  decay-MMPs
+  degrade-collagen
+end
+
+to secrete-MMPs
+  ask macrophages [
+    ;; Macrophages secrete MMPs inversely correlated with TGF-β levels
+    let secretion MMP-secretion-rate * (1 - (patch_TGFbeta / highTGFbetaThresh))
+    ask patch-here [
+      set MMP-concentration MMP-concentration + secretion
+    ]
+  ]
+end
+
+to diffuse-MMPs
+  diffuse MMP-concentration 0.3  ; MMP diffusion rate (slower than TGF-β)
+end
+
+to decay-MMPs
+  ask patches [
+    set MMP-concentration MMP-concentration * (1 - MMP-decay-rate)
+  ]
+end
+
+to degrade-collagen
+  ask patches [
+    ;; Collagen degradation limited to areas with MMP activity
+    if patch_alveoli = 1 [
+      let degradation MMP-concentration * MMP-degradation-rate
+      set total_patch_collagen max (list 0 (total_patch_collagen - degradation))
+    ]
+  ]
+  sum-collagen  ; Update global collagen tracking
+end
+;=================================================================
 @#$#@#$#@
 GRAPHICS-WINDOW
 936
@@ -846,6 +914,92 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+929
+93
+1016
+138
+Starting seed
+starting-seed
+0
+1
+11
+
+SLIDER
+533
+65
+705
+98
+strategy-pentox
+strategy-pentox
+0
+3
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+737
+66
+909
+99
+strategy-pirf
+strategy-pirf
+0
+3
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+405
+245
+602
+278
+percent-pixel-collagen-thresh
+percent-pixel-collagen-thresh
+50
+100
+75.0
+5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+408
+326
+580
+359
+initial-fibroblast-cells
+initial-fibroblast-cells
+1
+100
+50.0
+5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+410
+391
+615
+424
+initial-number-of-macrophages
+initial-number-of-macrophages
+0
+100
+20.0
+5
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
