@@ -91,7 +91,62 @@ end
 to setup
   ;===== Import world from .csv and set patch variables
   set percent-pixel-collagen 0
+  ;===== Import "Healthy Lung case from ICERM"
   import-world "HistologyHealthyLung.csv"
+  ;===== Import HealthyControls human patient samples
+  ; HC_1.B0.1
+  ;import-world "CropMaskHE/HealthyControls/V19S23-092-A1.csv"
+  ; HC_1.B0.2
+  ;import-world "CropMaskHE/HealthyControls/V10T03-282-A1.csv"
+  ; HC_2.B0.1
+  ;import-world "CropMaskHE/HealthyControls/V10T31-015-A1.csv"
+  ; HC_3.B0.1
+  ;import-world "CropMaskHE/HealthyControls/V10T31-019-A1.csv"
+  ; HC_3.B0.2
+  ;import-world "CropMaskHE/HealthyControls/V10T03-280-A1.csv"
+  ; HC_4.B0.1
+  ;import-world "CropMaskHE/HealthyControls/V10T03-281-A1.csv"
+  ;===== Import IPF progression tissue block 1 human patient samples
+  ; IPF_1.B1.1
+  ;import-world "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv"
+  ; IPF_1.B1.2
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv"
+  ; IPF_2.B1.1
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv"
+  ; IPF_2.B1.2
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv"
+  ; IPF_3.B1.2
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv"
+  ; IPF_4.B1.1
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv"
+  ; IPF_4.B1.2
+  ;import-world "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv"
+  ;===== Import IPF progression tissue block 2 human patient samples
+  ; IPF_1.B2.1
+  ;import-world "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv"
+  ; IPF_1.B2.2
+  ;import-world "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv"
+  ; IPF_2.B2.1
+  ;import-world "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv"
+  ; IPF_2.B2.2
+  ;import-world "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv"
+  ; IPF_3.B2.2
+  ;import-world "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv"
+  ; IPF_4.B2.1
+  ;import-world "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv"
+  ;===== Import IPF progression tissue block 3 human patient samples
+  ; IPF_1.B3.1
+  ;import-world "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv"
+  ; IPF_1.B3.2
+  ;import-world "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv"
+  ; IPF_2.B3.1
+  ;import-world "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv"
+  ; IPF_2.B3.2
+  ;import-world "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv"
+  ; IPF_3.B3.2
+  ;import-world "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv"
+  ; IPF_4.B3.1
+  ;import-world "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
   ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
   sum-collagen
   ;===== Random seed
