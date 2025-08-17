@@ -1,14 +1,15 @@
 ;----- Defining breeds and variables -----
 globals
 [
+  strarting_world_file
   number-of-fibroblasts
   number-of-myofibroblasts
+  number-of-macrophages
   total_world_collagen ; summing collagen
   initial_total_world_collagen
   myo_collagen
   fibro_collagen
   initial-number-of-sources
-  ; initial-number-of-macrophages
   TGFbetaDiffThresh
   pentox-TGFbetaDiffThresh
   pentox-myo_collagen
@@ -92,7 +93,7 @@ to setup
   ;===== Import world from .csv and set patch variables
   set percent-pixel-collagen 0
   ;===== Import "Healthy Lung case from ICERM"
-  import-world "HistologyHealthyLung.csv"
+  import-world starting_world_file ;"HistologyHealthyLung.csv"
   ;===== Import HealthyControls human patient samples
   ; HC_1.B0.1
   ;import-world "CropMaskHE/HealthyControls/V19S23-092-A1.csv"
@@ -164,7 +165,7 @@ to setup
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 90
-  ;set initial-number-of-macrophages 20
+  set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
   set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
@@ -178,6 +179,7 @@ to setup
     set color blue
     set size 4
     move-to one-of patches with [patch_alveoli = 0]
+    set number-of-macrophages count macrophages
   ]
   set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
   set MMP-secretion-rate 0.8      ; Based on macrophage activation
@@ -265,7 +267,7 @@ to place-fibroblasts
     set size 5
     move-to one-of patches with [patch_alveoli = 0]
   ]
-  set number-of-fibroblasts count fibroblasts
+   set number-of-fibroblasts count fibroblasts
 end
 
 ;Migrate fibroblasts randomly around the world
@@ -674,7 +676,7 @@ NIL
 MONITOR
 1026
 93
-1146
+1122
 138
 No. of fibroblasts
 number-of-fibroblasts
@@ -761,9 +763,9 @@ NIL
 1
 
 MONITOR
-1173
+1136
 93
-1320
+1252
 138
 No. of myofibroblasts
 number-of-myofibroblasts
@@ -1055,6 +1057,27 @@ initial-number-of-macrophages
 1
 NIL
 HORIZONTAL
+
+CHOOSER
+216
+10
+551
+55
+starting_world_file
+starting_world_file
+"HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
+14
+
+MONITOR
+1267
+93
+1392
+138
+No. of macrophages
+number-of-macrophages
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
