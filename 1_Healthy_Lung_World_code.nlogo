@@ -1,7 +1,7 @@
 ;----- Defining breeds and variables -----
 globals
 [
-  strarting_world_file
+  starting_world_file
   number-of-fibroblasts
   number-of-myofibroblasts
   number-of-macrophages
