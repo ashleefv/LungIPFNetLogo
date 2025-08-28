@@ -300,7 +300,7 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
     ]
   set heading randDirection
   move-to destination
-  let trail 0.1 * patch_TGFbeta
+  let trail trailPercent * patch_TGFbeta
   set patch_TGFbeta patch_TGFbeta + trail
   ;pen-up
 end
@@ -322,7 +322,7 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
     ]
   set heading randDirection
   move-to destination
-  let trail 0.1 * patch_TGFbeta
+  let trail trailPercent * patch_TGFbeta
   set patch_TGFbeta patch_TGFbeta + trail
   ;pen-up
 end
