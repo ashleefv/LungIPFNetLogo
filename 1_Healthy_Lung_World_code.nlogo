@@ -564,10 +564,10 @@ to sum-collagen
 end
 
 to calculate-percent-collagen
-  let sum-patch-collagen sum [patch_alveoli] of patches
+  let sum-patch-alveoli sum [patch_alveoli] of patches
   let domain-size world-width * world-height
-  let fraction-collagen sum-patch-collagen / domain-size
-  set percent-pixel-collagen 100 - 100 * fraction-collagen
+  let fraction-alveoli sum-patch-alveoli / domain-size
+  set percent-pixel-collagen 100 - 100 * fraction-alveoli
 end
 
 ;=== DIKSHA: This is the implementation of the MMPS that degrade the collagen
