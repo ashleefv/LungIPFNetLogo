@@ -1,7 +1,6 @@
 ;----- Defining breeds and variables -----
 globals
 [
-  starting_world_file
   number-of-fibroblasts
   number-of-myofibroblasts
   number-of-macrophages
@@ -93,7 +92,7 @@ to setup
   ;===== Import world from .csv and set patch variables
   set percent-pixel-collagen 0
   ;===== Import "Healthy Lung case from ICERM"
-  import-world starting_world_file ;"HistologyHealthyLung.csv"
+  import-world starting_world_file ;"HistologyHealthyLung.csv" ; starting_world_file is from a chooser
   ;===== Import HealthyControls human patient samples
   ; HC_1.B0.1
   ;import-world "CropMaskHE/HealthyControls/V19S23-092-A1.csv"
