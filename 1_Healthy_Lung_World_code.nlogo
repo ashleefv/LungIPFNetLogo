@@ -3,7 +3,6 @@ globals
 [
   number-of-fibroblasts
   number-of-myofibroblasts
-  number-of-macrophages
   total_world_collagen ; summing collagen
   initial_total_world_collagen
   myo_collagen
@@ -21,7 +20,6 @@ globals
   pirf-trailPercent
   have-dosed-pentox
   have-dosed-pirf
-  clock
   starting-seed
   ;===== To avoid infinite loops in the case of single-patch collagen "islands"
   max-tries-for-chemotax
@@ -31,9 +29,11 @@ globals
   ;initial-fibroblast-cells
   ;strategy-pentox
   ;strategy-pirf
-  MMP-degradation-rate    ; Collagen degraded per MMP unit per tick
-  MMP-secretion-rate      ; MMPs secreted per macrophage per tick
-  MMP-decay-rate          ; Rate of MMP concentration decay
+  ; MMP and macrophage dynamics are unused for now
+  ;MMP-degradation-rate    ; Collagen degraded per MMP unit per tick
+  ;MMP-secretion-rate      ; MMPs secreted per macrophage per tick
+  ;MMP-decay-rate          ; Rate of MMP concentration decay
+  ;number-of-macrophages
   ;===== Diffusion-related and units stuff
   dt ; (units sec?)
   h ; (dx = dy = h units microns?)
@@ -49,8 +49,8 @@ extensions
 
 breed [ fibroblasts fibroblast ]
 breed [ myofibroblasts myofibroblast ]
-breed [ macrophages macrophage ]
-breed [ TGFbeta-sources TGFbeta-source ]
+;breed [ macrophages macrophage ]
+breed [ TGFbeta-sources TGFbeta-source ] ; conceptually this can be from macrophages or other damage
 
 patches-own
 [
@@ -164,7 +164,7 @@ to setup
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 90
-  set initial-number-of-macrophages 20
+  ;set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
   set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
@@ -174,16 +174,17 @@ to setup
   set fibro_collagen 9
   set uptakePercent 0.00001
   set trailPercent 0.001
-  create-macrophages initial-number-of-macrophages [  ; Add macrophages
-    set color blue
-    set size 4
-    move-to one-of patches with [patch_alveoli = 0]
-    set number-of-macrophages count macrophages
-  ]
-  set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
-  set MMP-secretion-rate 0.8      ; Based on macrophage activation
-  set MMP-decay-rate  0.05         ; MMP half-life 0.1
-  ask patches [set MMP-concentration 0]
+  ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
+  ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
+  ;  set color blue
+  ;  set size 4
+  ;  move-to one-of patches with [patch_alveoli = 0]
+  ;  set number-of-macrophages count macrophages
+  ;]
+  ;set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
+  ;set MMP-secretion-rate 0.8      ; Based on macrophage activation
+  ;set MMP-decay-rate  0.05         ; MMP half-life 0.1
+  ;ask patches [set MMP-concentration 0]
   set pentox-myo_collagen 5
   set pentox-TGFbetaDiffThresh 1.5 * TGFbetaDiffThresh
   set pirf-trailPercent 0.0001
@@ -191,11 +192,11 @@ to setup
   set have-dosed-pentox 0
   set max-tries-for-chemotax 10
   set max-tries-for-migrate 10
-  set dt 1 ; search literature for better value
-  set h 1 ; search literature for better value
-  set TGFbeta-diffusion-coefficient 5; c^2 in the heat equation (units microns^2/s?) search literature for better value
+  set dt 0.125 ; s/time step tick
+  set h 10 ; microns/pixel
+  set TGFbeta-diffusion-coefficient 50; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
-  set TGFbeta-diffusion-number 4 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
+  set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
   ;===== Initialize
   place-fibroblasts
   deposit-TGFbeta-on-sources
@@ -208,7 +209,7 @@ to go
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
     diffuse-TGFbeta
-    manage-MMP-dynamics
+    ;manage-MMP-dynamics
     chemotax-fibroblasts
     chemotax-myofibroblasts
     differentiate-TGFbetaThresh
@@ -507,7 +508,7 @@ end
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
 
 to diffuse-TGFbeta
-  diffuse patch_TGFbeta .01
+  diffuse patch_TGFbeta TGFbeta-diffusion-number
 ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor scale-color blue patch_TGFbeta 0 100]]]
 ;  ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if patch_TGFbeta > 0 [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
 end
@@ -572,43 +573,43 @@ end
 
 ;=== DIKSHA: This is the implementation of the MMPS that degrade the collagen
 
-to manage-MMP-dynamics
-  secrete-MMPs
-  diffuse-MMPs
-  decay-MMPs
-  degrade-collagen
-end
+;to manage-MMP-dynamics
+;  secrete-MMPs
+;  diffuse-MMPs
+;  decay-MMPs
+;  degrade-collagen
+;end
 
-to secrete-MMPs
-  ask macrophages [
-    ;; Macrophages secrete MMPs inversely correlated with TGF-β levels
-    let secretion MMP-secretion-rate * (1 - (patch_TGFbeta / highTGFbetaThresh))
-    ask patch-here [
-      set MMP-concentration MMP-concentration + secretion
-    ]
-  ]
-end
+;to secrete-MMPs
+;  ask macrophages [
+;    ;; Macrophages secrete MMPs inversely correlated with TGF-β levels
+;    let secretion MMP-secretion-rate * (1 - (patch_TGFbeta / highTGFbetaThresh))
+;    ask patch-here [
+;      set MMP-concentration MMP-concentration + secretion
+;    ]
+;  ]
+;end
 
-to diffuse-MMPs
-  diffuse MMP-concentration 0.3  ; MMP diffusion rate (slower than TGF-β)
-end
+;to diffuse-MMPs
+;  diffuse MMP-concentration 0.3  ; MMP diffusion rate (slower than TGF-β)
+;end
 
-to decay-MMPs
-  ask patches [
-    set MMP-concentration MMP-concentration * (1 - MMP-decay-rate)
-  ]
-end
+;to decay-MMPs
+;  ask patches [
+;    set MMP-concentration MMP-concentration * (1 - MMP-decay-rate)
+;  ]
+;end
 
-to degrade-collagen
-  ask patches [
-    ;; Collagen degradation limited to areas with MMP activity
-    if patch_alveoli = 1 [
-      let degradation MMP-concentration * MMP-degradation-rate
-      set total_patch_collagen max (list 0 (total_patch_collagen - degradation))
-    ]
-  ]
-  sum-collagen  ; Update global collagen tracking
-end
+;to degrade-collagen
+;  ask patches [
+;    ;; Collagen degradation limited to areas with MMP activity
+;    if patch_alveoli = 1 [
+;      let degradation MMP-concentration * MMP-degradation-rate
+;      set total_patch_collagen max (list 0 (total_patch_collagen - degradation))
+;    ]
+;  ]
+;  sum-collagen  ; Update global collagen tracking
+;end
 ;=================================================================
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -1015,7 +1016,7 @@ HORIZONTAL
 SLIDER
 405
 245
-602
+623
 278
 percent-pixel-collagen-thresh
 percent-pixel-collagen-thresh
@@ -1042,21 +1043,6 @@ initial-fibroblast-cells
 NIL
 HORIZONTAL
 
-SLIDER
-410
-391
-615
-424
-initial-number-of-macrophages
-initial-number-of-macrophages
-0
-100
-20.0
-5
-1
-NIL
-HORIZONTAL
-
 CHOOSER
 216
 10
@@ -1065,18 +1051,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-14
-
-MONITOR
-1267
-93
-1392
-138
-No. of macrophages
-number-of-macrophages
-17
-1
-11
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
