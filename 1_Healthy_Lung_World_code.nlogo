@@ -17,6 +17,7 @@ globals
   percent-pixel-collagen
   uptakePercent
   trailPercent
+  secrete-spill-collagenFraction
   pirf-trailPercent
   have-dosed-pentox
   have-dosed-pirf
@@ -174,6 +175,7 @@ to setup
   set fibro_collagen 9
   set uptakePercent 0.00001
   set trailPercent 0.001
+  set secrete-spill-collagenFraction 0.1
   ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
   ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
   ;  set color blue
@@ -214,7 +216,7 @@ to go
     chemotax-myofibroblasts
     differentiate-TGFbetaThresh
     ;ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
-    if number-of-myofibroblasts >= 0.1 * initial-fibroblast-cells [ secrete-spill-collagen]
+    if number-of-myofibroblasts >= secrete-spill-collagenFraction * initial-fibroblast-cells [ secrete-spill-collagen]
     ;===============  APPLY DRUG STRATEGIES =============
     if (have-dosed-pentox = 0) and (strategy-pentox != 0)
     [
@@ -471,23 +473,6 @@ to chemotax-myofibroblasts
 end
 
 ;---- Deposit and diffuse growth factors (ligands) ------
-
-; Deposit growth factors by colouring with your mouse the patches you want the growth factors to diffuse from.
-; Wherever you click your mouse, the patch will turn white, and this will indicate a location where you want growth factor to diffuse from.
-
-to draw-white
-  if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor white ]]
-end
-
-to draw-red
-  if mouse-down? [ask patch mouse-xcor mouse-ycor [ set pcolor red ]]
-end
-
-; The following code places and initial amount of growth factor on the patch that you coloured white with your mouse.
-
-to deposit-TGFbeta-on-white-patches
-  ask patches [if pcolor = white [set patch_TGFbeta 5000]]
-end
 
 ; The following code places and initial amount of growth factor on initial-number-of-sources purple patches randomly.
 
