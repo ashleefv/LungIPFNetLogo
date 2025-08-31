@@ -18,6 +18,9 @@ globals
   uptakePercent
   trailPercent
   secrete-spill-collagenFraction
+  partialTurnAngleDegrees
+  fibroblastSpeed
+  myfibroblastSpeed
   pirf-trailPercent
   have-dosed-pentox
   have-dosed-pirf
@@ -176,6 +179,7 @@ to setup
   set uptakePercent 0.00001
   set trailPercent 0.001
   set secrete-spill-collagenFraction 0.1
+  set partialTurnAngleDegrees 30
   ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
   ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
   ;  set color blue
@@ -195,7 +199,9 @@ to setup
   set max-tries-for-chemotax 10
   set max-tries-for-migrate 10
   set dt 0.125 ; s/time step tick
-  set h 10 ; microns/pixel
+  set h 10 ; microns/patch
+  set fibroblastSpeed 15 / 3600 * t / h ; 15 micron/hr converted to patches/tick
+  set myfibroblastSpeed 8 / 3600 * t / h ; 8 micron/hr converted to patches/tick
   set TGFbeta-diffusion-coefficient 50; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
   set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
@@ -275,7 +281,7 @@ end
 ;Migrate fibroblasts randomly around the world
 
 to migrate-fibroblasts-randomly
-  ask fibroblasts [set prev-patch patch-here rt random-float 30 lt random-float 30 fd 1]
+  ask fibroblasts [set prev-patch patch-here rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees fd fibroblastSpeed]
 end
 
 ;Migrate fibroblasts randomly on purple patches only
@@ -290,9 +296,9 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   ;pen-down
   set prev-patch patch-here
   let randDirection random-float 360
-  let uptake 0.2 * patch_TGFbeta
-  set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
-  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
+  let uptake uptakePercent * patch_TGFbeta
+  set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
   let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
   set tries-for-migrate 1
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
@@ -312,9 +318,9 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
   ;pen-down
   set prev-patch patch-here
   let randDirection random-float 360
-  let uptake 0.2 * patch_TGFbeta
-  set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
-  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
+  let uptake uptakePercent * patch_TGFbeta
+  set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake) ;
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
   let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
   set tries-for-migrate 1
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
@@ -330,33 +336,34 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
   ;pen-up
 end
 
-;Proliferate fibroblasts
+;;;---- the following four functions are not called but preserved for future use ---- ;;;
+;;Proliferate fibroblasts
 
-to proliferate-fibroblasts
-  ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
-  set number-of-fibroblasts count fibroblasts
-end
+;to proliferate-fibroblasts
+;  ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
+;  set number-of-fibroblasts count fibroblasts
+;end
 
-;Proliferate myofibroblasts
+;;Proliferate myofibroblasts
 
-to proliferate-myofibroblasts
-  ask myofibroblasts [hatch 1 [migrate-single-myofibroblast-on-non-alveoli]]
-  set number-of-myofibroblasts count myofibroblasts
-end
+;to proliferate-myofibroblasts
+;  ask myofibroblasts [hatch 1 [migrate-single-myofibroblast-on-non-alveoli]]
+;  set number-of-myofibroblasts count myofibroblasts
+;end
 
-; Kill fibroblasts that are overcrowded
+;; Kill fibroblasts that are overcrowded
 
-to apoptose-crowded-fibroblasts
-  ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
-  set number-of-fibroblasts count fibroblasts
-end
+;to apoptose-crowded-fibroblasts
+;  ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
+;  set number-of-fibroblasts count fibroblasts
+;end
 
-; Kill myofibroblasts that are overcrowded
+;; Kill myofibroblasts that are overcrowded
 
-to apoptose-crowded-myofibroblasts
-  ask myofibroblasts [if sum [count myofibroblasts-here] of neighbors > 6 [die]]
-  set number-of-myofibroblasts count myofibroblasts
-end
+;to apoptose-crowded-myofibroblasts
+;  ask myofibroblasts [if sum [count myofibroblasts-here] of neighbors > 6 [die]]
+;  set number-of-myofibroblasts count myofibroblasts
+;end
 
 ; Differentiate fibroblasts if they are in a patch of TGFbeta > TGFbetaDiffThresh
 
@@ -394,14 +401,14 @@ to chemotax-fibroblasts
       [
           set prev-patch patch-here
           let uptake uptakePercent * patch_TGFbeta
-          set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
-          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
+          set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
+          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
           move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
-          rt random-float 30 lt random-float 30
-          fd 1
+          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+          fd fibroblastSpeed
           ]
         set tries-for-chemotax 1
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
@@ -411,8 +418,8 @@ to chemotax-fibroblasts
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
-          rt random-float 30 lt random-float 30
-          fd 1
+          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+          fd fibroblastSpeed
           ]
           set tries-for-chemotax tries-for-chemotax + 1
        ]
@@ -439,14 +446,14 @@ to chemotax-myofibroblasts
       [
           set prev-patch patch-here
           let uptake uptakePercent * patch_TGFbeta
-          set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to 20% of the patch's TFGbeta (uptake)
-          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have 20% less TFGbeta because of uptake
+          set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
+          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
           move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
-          rt random-float 30 lt random-float 30
-          fd 1
+          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+          fd myofibroblastSpeed
           ]
         set tries-for-chemotax 1
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
@@ -456,8 +463,8 @@ to chemotax-myofibroblasts
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
-          rt random-float 30 lt random-float 30
-          fd 1
+          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+          fd myofibroblastSpeed
           ]
           set tries-for-chemotax tries-for-chemotax + 1
        ]
