@@ -30,7 +30,7 @@ globals
   max-tries-for-migrate
   ;===== The following globals can become sliders for behavior space
   ;percent-pixel-collagen-thresh
-  ;initial-fibroblast-cells
+  initial-fibroblast-cells_notslider
   ;strategy-pentox
   ;strategy-pirf
   ;; MMP and macrophage dynamics are unused for now, left un-commented as all the initial world options had these globals activated when created
@@ -169,6 +169,7 @@ to setup
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 90
+  set initial-fibroblast-cells_notslider 30
   ;set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
   set TGFbetaDiffThresh 100
@@ -218,12 +219,14 @@ end
 ;------- GO!!!!!! ------
 
 to go
+  ;;; somewhat inconsistent fibroblast count; Can we just deactivate this
   ;; in setup, the stored value of initial-fibroblast-cells from the starting_world_file is 50, thus ignoring the crt box entry. So check here to see if the number selected is different than 50
   if initial-fibroblast-cells != 50
   [
     ask fibroblasts [die]
     set number-of-fibroblasts count fibroblasts
     place-fibroblasts
+    set number-of-fibroblasts count fibroblasts
   ]
 
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
@@ -278,7 +281,7 @@ end
 ;Create fibroblasts in the world, according to the specified number in the slider
 
 to place-fibroblasts
-  crt initial-fibroblast-cells
+  crt initial-fibroblast-cells_notslider
   [
     ;setxy (random-float world-width) (random-float world-height)
     set breed fibroblasts
@@ -1041,8 +1044,8 @@ initial-fibroblast-cells
 initial-fibroblast-cells
 1
 100
-96.0
-5
+50.0
+1
 1
 NIL
 HORIZONTAL
