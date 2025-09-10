@@ -205,7 +205,7 @@ to setup
   set max-tries-for-migrate 10
   set dt 0.125 ; s/time step tick
   set h 10 ; microns/patch
-  set fibroblastSpeed ( 15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
+  set fibroblastSpeed (10000 * 15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
   set myofibroblastSpeed (8 / 3600 * dt / h) ; 8 micron/hr converted to patches/tick
   set TGFbeta-diffusion-coefficient 50; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
