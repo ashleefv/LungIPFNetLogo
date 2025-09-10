@@ -203,11 +203,11 @@ to setup
   set have-dosed-pentox 0
   set max-tries-for-chemotax 10
   set max-tries-for-migrate 10
-  set dt 0.125 ; s/time step tick
+  set dt 1; hr/time step tick ; %0.125 s;
   set h 10 ; microns/patch
-  set fibroblastSpeed (10000 * 15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
-  set myofibroblastSpeed (8 / 3600 * dt / h) ; 8 micron/hr converted to patches/tick
-  set TGFbeta-diffusion-coefficient 50; units microns^2/s
+  set fibroblastSpeed 1;%(10000 * 15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
+  set myofibroblastSpeed 1;%(20000 * 8 / 3600 * dt / h) ; 8 micron/hr converted to patches/tick
+  set TGFbeta-diffusion-coefficient 1; 50 ; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
   set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
   ;===== Initialize
@@ -307,6 +307,7 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
   let destination patch (xcor + fibroblastSpeed * cos randDirection ) (ycor + fibroblastSpeed * sin randDirection )
   set tries-for-migrate 1
+  ;; if the destination is on an alveoli, try again to migrate elsewhere
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
   [
     set randDirection random-float 360
@@ -409,7 +410,7 @@ to chemotax-fibroblasts
           let uptake uptakePercent * patch_TGFbeta
           set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
           set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          ; move-to patch-here  ;; go to patch center
+          move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -420,7 +421,7 @@ to chemotax-fibroblasts
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
-          ; move-to patch-here  ;; go to patch center
+          move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -454,7 +455,7 @@ to chemotax-myofibroblasts
           let uptake uptakePercent * patch_TGFbeta
           set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
           set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          ; move-to patch-here  ;; go to patch center
+          move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -465,7 +466,7 @@ to chemotax-myofibroblasts
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
-          ; move-to patch-here  ;; go to patch center
+          move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -516,7 +517,7 @@ end
 ;end
 
 to secrete-spill-collagen
-  ; ask turtles[move-to patch-here]
+  ask turtles[move-to patch-here]
 
   ; current patch accumuates collagen
   ask patches [accumulate-collagen]
