@@ -218,6 +218,14 @@ end
 ;------- GO!!!!!! ------
 
 to go
+  ;; in setup, the stored value of initial-fibroblast-cells from the starting_world_file is 50, thus ignoring the crt box entry. So check here to see if the number selected is different than 50
+  if initial-fibroblast-cells != 50
+  [
+    ask fibroblasts [die]
+    set number-of-fibroblasts count fibroblasts
+    place-fibroblasts
+  ]
+
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
     diffuse-TGFbeta
@@ -1025,15 +1033,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-408
-326
-580
-359
+38
+145
+210
+178
 initial-fibroblast-cells
 initial-fibroblast-cells
 1
 100
-50.0
+96.0
 5
 1
 NIL
@@ -1047,7 +1055,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-3
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
