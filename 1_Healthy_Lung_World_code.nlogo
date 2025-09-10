@@ -33,11 +33,12 @@ globals
   ;initial-fibroblast-cells
   ;strategy-pentox
   ;strategy-pirf
-  ; MMP and macrophage dynamics are unused for now
-  ;MMP-degradation-rate    ; Collagen degraded per MMP unit per tick
-  ;MMP-secretion-rate      ; MMPs secreted per macrophage per tick
-  ;MMP-decay-rate          ; Rate of MMP concentration decay
-  ;number-of-macrophages
+  ;; MMP and macrophage dynamics are unused for now, left un-commented as all the initial world options had these globals activated when created
+  MMP-degradation-rate    ; Collagen degraded per MMP unit per tick
+  MMP-secretion-rate      ; MMPs secreted per macrophage per tick
+  MMP-decay-rate          ; Rate of MMP concentration decay
+  clock
+  initial-number-of-macrophages
   ;===== Diffusion-related and units stuff
   dt ; (units sec)
   h ; (dx = dy = h units microns)
@@ -187,9 +188,12 @@ to setup
   ;  move-to one-of patches with [patch_alveoli = 0]
   ;  set number-of-macrophages count macrophages
   ;]
-  ;set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
-  ;set MMP-secretion-rate 0.8      ; Based on macrophage activation
-  ;set MMP-decay-rate  0.05         ; MMP half-life 0.1
+  ;; these MMP settings are unused
+  set MMP-degradation-rate 0.02   ; Literature range: 0.01-0.05
+  set MMP-secretion-rate 0.8      ; Based on macrophage activation
+  set MMP-decay-rate  0.05         ; MMP half-life 0.1
+  set initial-number-of-macrophages 0
+  set clock 1
   ;ask patches [set MMP-concentration 0]
   set pentox-myo_collagen 5
   set pentox-TGFbetaDiffThresh 1.5 * TGFbetaDiffThresh
@@ -403,7 +407,7 @@ to chemotax-fibroblasts
           let uptake uptakePercent * patch_TGFbeta
           set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
           set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          move-to patch-here  ;; go to patch center
+          ; move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -414,7 +418,7 @@ to chemotax-fibroblasts
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
-          move-to patch-here  ;; go to patch center
+          ; move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -448,7 +452,7 @@ to chemotax-myofibroblasts
           let uptake uptakePercent * patch_TGFbeta
           set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
           set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          move-to patch-here  ;; go to patch center
+          ; move-to patch-here  ;; go to patch center
           let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -459,7 +463,7 @@ to chemotax-myofibroblasts
        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
        [
           move-to prev-patch
-          move-to patch-here  ;; go to patch center
+          ; move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
           if [patch_TGFbeta] of p > patch_TGFbeta [
           face p
@@ -510,7 +514,7 @@ end
 ;end
 
 to secrete-spill-collagen
-  ask turtles[move-to patch-here]
+  ; ask turtles[move-to patch-here]
 
   ; current patch accumuates collagen
   ask patches [accumulate-collagen]
@@ -1043,7 +1047,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-0
+3
 
 @#$#@#$#@
 ## WHAT IS IT?
