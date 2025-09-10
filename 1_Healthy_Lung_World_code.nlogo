@@ -20,7 +20,7 @@ globals
   secrete-spill-collagenFraction
   partialTurnAngleDegrees
   fibroblastSpeed
-  myfibroblastSpeed
+  myofibroblastSpeed
   pirf-trailPercent
   have-dosed-pentox
   have-dosed-pirf
@@ -39,8 +39,8 @@ globals
   ;MMP-decay-rate          ; Rate of MMP concentration decay
   ;number-of-macrophages
   ;===== Diffusion-related and units stuff
-  dt ; (units sec?)
-  h ; (dx = dy = h units microns?)
+  dt ; (units sec)
+  h ; (dx = dy = h units microns)
   TGFbeta-diffusion-coefficient ; c^2 in the heat equation (units microns^2/s?)
   TGFbeta-sigma ;
   TGFbeta-diffusion-number ; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
@@ -200,8 +200,8 @@ to setup
   set max-tries-for-migrate 10
   set dt 0.125 ; s/time step tick
   set h 10 ; microns/patch
-  set fibroblastSpeed 15 / 3600 * t / h ; 15 micron/hr converted to patches/tick
-  set myfibroblastSpeed 8 / 3600 * t / h ; 8 micron/hr converted to patches/tick
+  set fibroblastSpeed (15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
+  set myofibroblastSpeed (8 / 3600 * dt / h) ; 8 micron/hr converted to patches/tick
   set TGFbeta-diffusion-coefficient 50; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
   set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
