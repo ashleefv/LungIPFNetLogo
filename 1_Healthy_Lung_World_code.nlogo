@@ -30,7 +30,7 @@ globals
   max-tries-for-migrate
   ;===== The following globals can become sliders for behavior space
   ;percent-pixel-collagen-thresh
-  initial-fibroblast-cells_notslider
+  initial-fibroblast-cells
   ;strategy-pentox
   ;strategy-pirf
   ;; MMP and macrophage dynamics are unused for now, left un-commented as all the initial world options had these globals activated when created
@@ -159,7 +159,7 @@ to setup
   random-seed starting-seed ;added this line to ensure randomly distributed fibroblasts at the beginning
   ;===== Comment if using sliders
   ;set percent-pixel-collagen-thresh 75
-  ;set initial-fibroblast-cells 50
+
   ;set strategy-pentox 0
   ;set strategy-pirf 0
   ;_____
@@ -169,7 +169,7 @@ to setup
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 90
-  set initial-fibroblast-cells_notslider 50
+  set initial-fibroblast-cells 50
   ;set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
   set TGFbetaDiffThresh 100
@@ -205,7 +205,7 @@ to setup
   set max-tries-for-migrate 10
   set dt 0.125 ; s/time step tick
   set h 10 ; microns/patch
-  set fibroblastSpeed (15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
+  set fibroblastSpeed ( 15 / 3600 * dt / h) ; 15 micron/hr converted to patches/tick
   set myofibroblastSpeed (8 / 3600 * dt / h) ; 8 micron/hr converted to patches/tick
   set TGFbeta-diffusion-coefficient 50; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
@@ -219,15 +219,6 @@ end
 ;------- GO!!!!!! ------
 
 to go
-  ;;; somewhat inconsistent fibroblast count; Can we just deactivate this
-  ;; in setup, the stored value of initial-fibroblast-cells from the starting_world_file is 50, thus ignoring the slide entry. So check here to see if the number selected is different than 50
-  if initial-fibroblast-cells != 50
-  [
-    ask fibroblasts [die]
-    set number-of-fibroblasts count fibroblasts
-    place-fibroblasts
-    set number-of-fibroblasts count fibroblasts
-  ]
 
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
@@ -281,7 +272,7 @@ end
 ;Create fibroblasts in the world, according to the specified number in the slider
 
 to place-fibroblasts
-  crt initial-fibroblast-cells_notslider
+  crt initial-fibroblast-cells
   [
     ;setxy (random-float world-width) (random-float world-height)
     set breed fibroblasts
@@ -314,12 +305,12 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   let uptake uptakePercent * patch_TGFbeta
   set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
   set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+  let destination patch (xcor + fibroblastSpeed * cos randDirection ) (ycor + fibroblastSpeed * sin randDirection )
   set tries-for-migrate 1
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
   [
     set randDirection random-float 360
-    set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    set destination patch (xcor + fibroblastSpeed * cos randDirection ) (ycor + fibroblastSpeed * sin randDirection)
     set tries-for-migrate tries-for-migrate + 1
     ]
   set heading randDirection
@@ -336,12 +327,12 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
   let uptake uptakePercent * patch_TGFbeta
   set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake) ;
   set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-  let destination patch (xcor + cos randDirection ) (ycor + sin randDirection )
+  let destination patch (xcor + myofibroblastSpeed * cos randDirection ) (ycor + myofibroblastSpeed * sin randDirection )
   set tries-for-migrate 1
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
   [
     set randDirection random-float 360
-    set destination patch (xcor + cos randDirection ) (ycor + sin randDirection)
+    set destination patch (xcor + myofibroblastSpeed * cos randDirection ) (ycor + myofibroblastSpeed * sin randDirection)
     set tries-for-migrate tries-for-migrate + 1
     ]
   set heading randDirection
@@ -1035,21 +1026,6 @@ percent-pixel-collagen-thresh
 NIL
 HORIZONTAL
 
-SLIDER
-38
-145
-210
-178
-initial-fibroblast-cells
-initial-fibroblast-cells
-1
-100
-50.0
-1
-1
-NIL
-HORIZONTAL
-
 CHOOSER
 216
 10
@@ -1058,7 +1034,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-13
+2
 
 @#$#@#$#@
 ## WHAT IS IT?
