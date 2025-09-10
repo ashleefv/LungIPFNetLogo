@@ -339,10 +339,10 @@ end
 ;;;---- the following four functions are not called but preserved for future use ---- ;;;
 ;;Proliferate fibroblasts
 
-;to proliferate-fibroblasts
-;  ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
-;  set number-of-fibroblasts count fibroblasts
-;end
+to proliferate-fibroblasts
+  ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
+  set number-of-fibroblasts count fibroblasts
+end
 
 ;;Proliferate myofibroblasts
 
@@ -353,10 +353,10 @@ end
 
 ;; Kill fibroblasts that are overcrowded
 
-;to apoptose-crowded-fibroblasts
-;  ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
-;  set number-of-fibroblasts count fibroblasts
-;end
+to apoptose-crowded-fibroblasts
+  ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
+  set number-of-fibroblasts count fibroblasts
+end
 
 ;; Kill myofibroblasts that are overcrowded
 
