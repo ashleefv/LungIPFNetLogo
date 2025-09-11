@@ -1,6 +1,6 @@
 clear all
 close all
-csv_filename = '1_Healthy_Lung_World_code world.csv';
+csv_filename = '1_Healthy_Lung_World_code world.csv'; % _t0.csv
 GlobalVars = readtable(csv_filename ,Range="A9:AX10");
 
 turtlesStartRow = 13;

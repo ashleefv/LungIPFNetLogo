@@ -4,7 +4,7 @@ Ly = 1.0;           % Length in y-direction
 Nx = 100;           % Number of grid points in x
 Ny = 100;           % Number of grid points in y
 D = 5e-7;           % Diffusion coefficient cm@/s
-T = 895;           % Total simulation time s
+T = 3600;           % Total simulation time s
 dt = 0.125;         % Time step
 
 % Derived quantities
@@ -49,7 +49,7 @@ for n = 1:nSteps
     u(:,[1 end]) = 0; u([1 end],:) = 0;
 
     % Optional: visualize every 100 steps
-    if mod(n,5) == 0
+    if mod(n,100) == 0
         surf(X, Y, u/initialSourceTGFbeta, 'EdgeColor', 'none');
         title(['Time = ', num2str(n*dt/3600) ,' (hr)']);
         xlabel('x'); ylabel('y'); zlabel('u/initialSourceTGFbeta');
