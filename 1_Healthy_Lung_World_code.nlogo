@@ -31,6 +31,7 @@ globals
   ;===== The following globals can become sliders for behavior space
   ;percent-pixel-collagen-thresh
   initial-fibroblast-cells
+  myo-to-fibro-collagen-ratio
   ;strategy-pentox
   ;strategy-pirf
   ;; MMP and macrophage dynamics are unused for now, left un-commented as all the initial world options had these globals activated when created
@@ -176,8 +177,9 @@ to setup
   set initialSourceTGFbeta 5000
   set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
   set highTGFbetaThresh 0.8 * initialSourceTGFbeta
-  set myo_collagen 12
   set fibro_collagen 9
+  set myo-to-fibro-collagen-ratio 1.25
+  set myo_collagen myo-to-fibro-collagen-ratio * fibro_collagen
   set uptakePercent 0.00001
   set trailPercent 0.001
   set secrete-spill-collagenFraction 0.1
@@ -406,30 +408,37 @@ to chemotax-fibroblasts
     [
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
-          set prev-patch patch-here
-          let uptake uptakePercent * patch_TGFbeta
-          set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
-          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          move-to patch-here  ;; go to patch center
-          let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
-          if [patch_TGFbeta] of p > patch_TGFbeta [
+        set prev-patch patch-here
+        let uptake uptakePercent * patch_TGFbeta
+        set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
+        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+        move-to patch-here  ;; go to patch center
+        let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+        if [patch_TGFbeta] of p > patch_TGFbeta
+        [
           face p
           rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
           fd fibroblastSpeed
-          ]
+        ]
         set tries-for-chemotax 1
-       while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
-       [
+        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
+        [
           move-to prev-patch
           move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
-          if [patch_TGFbeta] of p > patch_TGFbeta [
-          face p
-          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
-          fd fibroblastSpeed
+          if [patch_TGFbeta] of p > patch_TGFbeta
+          [
+            face p
+            rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+            fd fibroblastSpeed
           ]
           set tries-for-chemotax tries-for-chemotax + 1
-       ]
+        ]
+        if patch_alveoli = 1
+        [
+          move-to prev-patch
+          move-to patch-here  ;; go to patch center
+        ]
         ; update TGFbeta due to uptake and trail (chemotaxis case only)
         let trail trailPercent * patch_TGFbeta
         set patch_TGFbeta patch_TGFbeta + trail
@@ -451,30 +460,37 @@ to chemotax-myofibroblasts
     [
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
-          set prev-patch patch-here
-          let uptake uptakePercent * patch_TGFbeta
-          set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
-          set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
-          move-to patch-here  ;; go to patch center
-          let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
-          if [patch_TGFbeta] of p > patch_TGFbeta [
+        set prev-patch patch-here
+        let uptake uptakePercent * patch_TGFbeta
+        set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
+        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+        move-to patch-here  ;; go to patch center
+        let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
+        if [patch_TGFbeta] of p > patch_TGFbeta
+        [
           face p
           rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
           fd myofibroblastSpeed
-          ]
+        ]
         set tries-for-chemotax 1
-       while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
-       [
+        while [ patch_alveoli = 1 and tries-for-chemotax <= max-tries-for-chemotax ]
+        [
           move-to prev-patch
           move-to patch-here  ;; go to patch center
           set p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
-          if [patch_TGFbeta] of p > patch_TGFbeta [
-          face p
-          rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
-          fd myofibroblastSpeed
+          if [patch_TGFbeta] of p > patch_TGFbeta
+          [
+            face p
+            rt random-float partialTurnAngleDegrees lt random-float partialTurnAngleDegrees
+            fd myofibroblastSpeed
           ]
           set tries-for-chemotax tries-for-chemotax + 1
-       ]
+        ]
+        if patch_alveoli = 1
+        [
+          move-to prev-patch
+          move-to patch-here  ;; go to patch center
+        ]
         ; update TGFbeta due to uptake and trail (chemotaxis case only)
         let trail trailPercent * patch_TGFbeta
         set patch_TGFbeta patch_TGFbeta + trail
