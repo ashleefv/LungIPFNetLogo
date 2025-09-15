@@ -325,7 +325,7 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
     move-to prev-patch
     move-to patch-here  ;; go to patch center
   ]
-  [
+  [ ; only update these for successful moves
     let trail trailPercent * patch_TGFbeta
     set patch_TGFbeta patch_TGFbeta + trail
   ]
@@ -354,7 +354,7 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
     move-to prev-patch
     move-to patch-here  ;; go to patch center
   ]
-  [
+  [ ; only update these for successful moves
     let trail trailPercent * patch_TGFbeta
     set patch_TGFbeta patch_TGFbeta + trail
   ]
@@ -450,14 +450,16 @@ to chemotax-fibroblasts
           ]
           set tries-for-chemotax tries-for-chemotax + 1
         ]
-        if patch_alveoli = 1
+        ifelse patch_alveoli = 1
         [
           move-to prev-patch
           move-to patch-here  ;; go to patch center
         ]
-        ; update TGFbeta due to uptake and trail (chemotaxis case only)
-        let trail trailPercent * patch_TGFbeta
-        set patch_TGFbeta patch_TGFbeta + trail
+        [ ; only update these for successful moves
+          ; update TGFbeta due to uptake and trail (chemotaxis case only)
+          let trail trailPercent * patch_TGFbeta
+          set patch_TGFbeta patch_TGFbeta + trail
+        ]
       ]
       [
         migrate-single-fibroblast-on-non-alveoli ; random walk
@@ -465,6 +467,7 @@ to chemotax-fibroblasts
     ]
   ]
 end
+
 
 to chemotax-myofibroblasts
   ask myofibroblasts
