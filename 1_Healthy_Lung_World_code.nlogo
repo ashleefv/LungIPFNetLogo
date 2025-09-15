@@ -185,7 +185,7 @@ to setup
   set trailPercent 0.001
   set secrete-spill-collagenFraction 0.1
   set partialTurnAngleDegrees 30
-  set successfullSpillToAlveoli 1
+  set successfullSpillToAlveoli 0.01
   ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
   ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
   ;  set color blue
