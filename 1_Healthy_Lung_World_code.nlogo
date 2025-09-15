@@ -22,6 +22,7 @@ globals
   fibroblastSpeed
   myofibroblastSpeed
   pirf-trailPercent
+  successfullSpillToAlveoli
   have-dosed-pentox
   have-dosed-pirf
   starting-seed
@@ -184,6 +185,7 @@ to setup
   set trailPercent 0.001
   set secrete-spill-collagenFraction 0.1
   set partialTurnAngleDegrees 30
+  set successfullSpillToAlveoli 1
   ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
   ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
   ;  set color blue
@@ -536,30 +538,43 @@ to secrete-spill-collagen
   ask turtles[move-to patch-here]
 
   ; current patch accumuates collagen
-  ask patches [accumulate-collagen]
+  ; ask patches [accumulate-collagen]
 
-  ; spill to neighbors to accumulate collagen there
+
   ask patches
   [ set myo_multiplier count myofibroblasts-here
     set fibro_multiplier count fibroblasts-here
     let myo_multiplier_neighbor myo_multiplier
     let fibro_multiplier_neighbor fibro_multiplier
+    accumulate-collagen ; accumulates collagen on this patch based on the local cell count
 
-    ifelse  count myofibroblasts-here > 0 ; includes myofibroblast only and combination of both types
-    [ ask neighbors
-      [ if patch_alveoli = 1
-        [set pcolor 115 set patch_alveoli 0]
-
-        set myo_multiplier myo_multiplier_neighbor
-        accumulate-collagen
-      ]
-    ]
-    [ if  count fibroblasts-here > 0 ; includes fibroblasts only case
+    ; spill to neighbors to accumulate collagen there
+    ifelse count myofibroblasts-here > 0 ; includes myofibroblast only and combination of both types
       [ ask neighbors
-        [ if patch_alveoli = 1
-          [set pcolor 115 set patch_alveoli 0]
+        [ set myo_multiplier myo_multiplier_neighbor
           set fibro_multiplier fibro_multiplier_neighbor
-          accumulate-collagen
+
+          ifelse patch_alveoli = 1
+            [ if random-float 1 < successfullSpillToAlveoli
+              [ set pcolor 115 set patch_alveoli 0
+                accumulate-collagen
+              ]
+            ]
+          [accumulate-collagen]
+        ]
+      ]
+    [ if count fibroblasts-here > 0 ; includes fibroblasts only case
+      [ ask neighbors
+        [ set fibro_multiplier fibro_multiplier_neighbor
+          set myo_multiplier myo_multiplier_neighbor
+
+          ifelse patch_alveoli = 1
+            [ if random-float 1 < successfullSpillToAlveoli
+              [ set pcolor 115 set patch_alveoli 0
+                accumulate-collagen
+              ]
+            ]
+          [accumulate-collagen]
         ]
       ]
     ]
@@ -1051,7 +1066,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-2
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
