@@ -549,35 +549,35 @@ to secrete-spill-collagen
     accumulate-collagen ; accumulates collagen on this patch based on the local cell count
 
     ; spill to neighbors to accumulate collagen there
-    ifelse count myofibroblasts-here > 0 ; includes myofibroblast only and combination of both types
+    if count myofibroblasts-here > 0 or count fibroblasts-here > 0 ; includes any combination of both types
       [ ask neighbors
         [ set myo_multiplier myo_multiplier_neighbor
           set fibro_multiplier fibro_multiplier_neighbor
 
           ifelse patch_alveoli = 1
-            [ if random-float 1 < successfullSpillToAlveoli
+            [ if random-float 1 <= successfullSpillToAlveoli
               [ set pcolor 115 set patch_alveoli 0
                 accumulate-collagen
               ]
             ]
-          [accumulate-collagen]
+          [accumulate-collagen] ; secrete onto existing collagen patches
         ]
       ]
-    [ if count fibroblasts-here > 0 ; includes fibroblasts only case
-      [ ask neighbors
-        [ set fibro_multiplier fibro_multiplier_neighbor
-          set myo_multiplier myo_multiplier_neighbor
-
-          ifelse patch_alveoli = 1
-            [ if random-float 1 < successfullSpillToAlveoli
-              [ set pcolor 115 set patch_alveoli 0
-                accumulate-collagen
-              ]
-            ]
-          [accumulate-collagen]
-        ]
-      ]
-    ]
+;    [ if count fibroblasts-here > 0 ; includes fibroblasts only case
+;      [ ask neighbors
+;        [ set fibro_multiplier fibro_multiplier_neighbor
+;          set myo_multiplier myo_multiplier_neighbor
+;
+;          ifelse patch_alveoli = 1
+;            [ if random-float 1 < successfullSpillToAlveoli
+;              [ set pcolor 115 set patch_alveoli 0
+;                accumulate-collagen
+;              ]
+;            ]
+;          [accumulate-collagen]
+;        ]
+;      ]
+;    ]
   ]
   sum-collagen
   ;tick
