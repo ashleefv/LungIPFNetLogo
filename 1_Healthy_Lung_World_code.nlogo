@@ -185,7 +185,7 @@ to setup
   set trailPercent 0.001
   set secrete-spill-collagenFraction 0.1
   set partialTurnAngleDegrees 30
-  set successfullSpillToAlveoli 0.01
+  set successfullSpillToAlveoli 0.001
   ;; macrophage and MMP portion of the model are still in development mode, not used in ICERM proceedings
   ;create-macrophages initial-number-of-macrophages [  ; Add macrophages
   ;  set color blue
@@ -226,7 +226,7 @@ to go
 
   ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
   [
-    diffuse-TGFbeta
+    ;diffuse-TGFbeta
     ;manage-MMP-dynamics
     chemotax-fibroblasts
     chemotax-myofibroblasts
@@ -317,11 +317,18 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
     set randDirection random-float 360
     set destination patch (xcor + fibroblastSpeed * cos randDirection ) (ycor + fibroblastSpeed * sin randDirection)
     set tries-for-migrate tries-for-migrate + 1
-    ]
+  ]
   set heading randDirection
   move-to destination
-  let trail trailPercent * patch_TGFbeta
-  set patch_TGFbeta patch_TGFbeta + trail
+  ifelse patch_alveoli = 1
+  [
+    move-to prev-patch
+    move-to patch-here  ;; go to patch center
+  ]
+  [
+    let trail trailPercent * patch_TGFbeta
+    set patch_TGFbeta patch_TGFbeta + trail
+  ]
   ;pen-up
 end
 
@@ -339,11 +346,18 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
     set randDirection random-float 360
     set destination patch (xcor + myofibroblastSpeed * cos randDirection ) (ycor + myofibroblastSpeed * sin randDirection)
     set tries-for-migrate tries-for-migrate + 1
-    ]
+  ]
   set heading randDirection
   move-to destination
-  let trail trailPercent * patch_TGFbeta
-  set patch_TGFbeta patch_TGFbeta + trail
+  ifelse patch_alveoli = 1
+  [
+    move-to prev-patch
+    move-to patch-here  ;; go to patch center
+  ]
+  [
+    let trail trailPercent * patch_TGFbeta
+    set patch_TGFbeta patch_TGFbeta + trail
+  ]
   ;pen-up
 end
 
