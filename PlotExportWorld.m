@@ -10,7 +10,7 @@ Turtles = readtable(csv_filename ,Range=turtlesDataCoords);
 
 patchesStartRow = turtlesEndRow  + 3;
 patchesEndRow = patchesStartRow + (GlobalVars.max_pxcor-GlobalVars.min_pxcor+1)*(str2num(GlobalVars.max_pycor{1})-GlobalVars.min_pycor+1);
-patchesDataCoords = ['A', num2str(patchesStartRow),':R',num2str(patchesEndRow)];
+patchesDataCoords = ['A', num2str(patchesStartRow),':O',num2str(patchesEndRow)];
 Patches = readtable(csv_filename ,Range=patchesDataCoords);
 
 x = Patches.pxcor;
