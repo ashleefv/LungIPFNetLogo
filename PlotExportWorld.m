@@ -33,9 +33,9 @@ plotPatchQuantityWithCollagenBoundary(x,y,patchquantity,QuantNameString,Patches.
 colormatrix = zeros(length(Patches.pcolor),3);
 for i = 1:length(Patches.pcolor)
     if Patches.pcolor(i) == 117
-        colormatrix(i,:) = [176 150 200]./255;
-    elseif Patches.pcolor(i) == 115
         colormatrix(i,:) = [124 80 164]./255;
+    elseif Patches.pcolor(i) == 115
+        colormatrix(i,:) = [176 150 200]./255;
     else
         colormatrix(i,:) = [255 255 255]./255;
     end
