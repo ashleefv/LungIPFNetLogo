@@ -178,7 +178,7 @@ to setup
   set initialSourceTGFbeta 5000
   set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
   set highTGFbetaThresh 0.8 * initialSourceTGFbeta
-  set fibro_collagen 9
+  set fibro_collagen 1
   set myo-to-fibro-collagen-ratio 1.25
   set myo_collagen myo-to-fibro-collagen-ratio * fibro_collagen
   set uptakePercent 0.00001
@@ -200,9 +200,9 @@ to setup
   set initial-number-of-macrophages 0
   set clock 1
   ;ask patches [set MMP-concentration 0]
-  set pentox-myo_collagen 5
-  set pentox-TGFbetaDiffThresh 1.5 * TGFbetaDiffThresh
-  set pirf-trailPercent 0.0001
+  set pentox-myo_collagen 0.5 ; multiplier to myo_collagen for the effect of pentox
+  set pentox-TGFbetaDiffThresh 1.5 ; multiplier to TGFbetaDiffThresh for the effect of pentox
+  set pirf-trailPercent 0.1 ; multiplier to trailPercent for the effect of pirf
   set have-dosed-pirf 0
   set have-dosed-pentox 0
   set max-tries-for-chemotax 10
@@ -400,14 +400,14 @@ end
 
 ; Addition of drug pentoxifylline
 to dose-pentox
-  set TGFbetaDiffThresh pentox-TGFbetaDiffThresh
-  set myo_collagen pentox-myo_collagen
+  set TGFbetaDiffThresh pentox-TGFbetaDiffThresh * TGFbetaDiffThresh
+  set myo_collagen pentox-myo_collagen * myo_collagen
   set have-dosed-pentox 1
 end
 
 ; Addition of drug Pirfenidone
 to dose-pirf
-  set trailPercent pirf-trailPercent
+  set trailPercent pirf-trailPercent * trailPercent
   set have-dosed-pirf 1
 end
 
@@ -1083,7 +1083,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-1
+4
 
 @#$#@#$#@
 ## WHAT IS IT?
