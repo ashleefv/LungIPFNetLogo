@@ -215,7 +215,7 @@ to setup
   set TGFbeta-diffusion-coefficient 1; 50 ; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
   set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
-  set time_stop 1 ; weeks
+  set time_stop 52 ; weeks
   ;===== Initialize
   place-fibroblasts
   deposit-TGFbeta-on-sources
