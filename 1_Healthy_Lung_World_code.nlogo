@@ -14,6 +14,8 @@ globals
   initialSourceTGFbeta
   lowTGFbetaThresh
   highTGFbetaThresh
+  Gaussian-stdev
+  Gaussian-radius
   percent-pixel-collagen
   uptakePercent
   trailPercent
@@ -171,7 +173,7 @@ to setup
   ;; strategy 2, drug is applied when percent-pixel-collagen >= 55
   ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
   ;===== Set parameters
-  set initial-number-of-sources 90
+  set initial-number-of-sources 100
   set initial-fibroblast-cells 50
   ;set initial-number-of-macrophages 20
   set initial_total_world_collagen total_world_collagen
@@ -182,8 +184,8 @@ to setup
   set fibro_collagen 1
   set myo-to-fibro-collagen-ratio 1.25
   set myo_collagen myo-to-fibro-collagen-ratio * fibro_collagen
-  set uptakePercent 0.00001
-  set trailPercent 0.001
+  set uptakePercent 0.1
+  set trailPercent 0.1
   set secrete-spill-collagenFraction 0.1
   set partialTurnAngleDegrees 30
   set successfullSpillToAlveoli 0.001
@@ -215,6 +217,8 @@ to setup
   set TGFbeta-diffusion-coefficient 1; 50 ; units microns^2/s
   set TGFbeta-sigma TGFbeta-diffusion-coefficient * dt / ( h ^ 2 )
   set TGFbeta-diffusion-number 8 * TGFbeta-sigma; used in diffuse4 or diffuse in the GO function to diffuse TGFbeta; this number is 4*sigma (if using diffuse4) or 8*sigma (if using diffuse)
+  set Gaussian-stdev 2
+  set Gaussian-stdev 2
   set time_stop 52 ; weeks
   ;===== Initialize
   place-fibroblasts
@@ -529,6 +533,7 @@ end
 ; The following code places and initial amount of growth factor on initial-number-of-sources purple patches randomly.
 
 to deposit-TGFbeta-on-sources
+  ask patches [set patch_TGFbeta 0]
   crt initial-number-of-sources
   [
     setxy (random-float world-width) (random-float world-height)
@@ -537,10 +542,35 @@ to deposit-TGFbeta-on-sources
     set color red
     set size 3
     move-to one-of patches with [patch_alveoli = 0]
-    set patch_TGFbeta initialSourceTGFbeta
+    let center-x pxcor            ;; Mean of x-coordinates
+    let center-y pycor            ;; Mean of y-coordinates
+    let radius Gaussian-radius
+    ask patches in-radius radius with
+    [
+     (pxcor <= max-pxcor) and (pxcor >= min-pxcor) and
+     (pycor <= max-pycor) and (pycor >= min-pycor)
+    ] [ calculate-gaussian center-x center-y
+      ]
   ]
+
   ask TGFbeta-sources [die]
 end
+
+to calculate-gaussian [center-x center-y]
+  ;; Adjustable parameters
+  let amplitude initialSourceTGFbeta         ;; Peak height
+  let stdev-x Gaussian-stdev            ;; Standard deviation for x
+  let stdev-y Gaussian-stdev          ;; Standard deviation for y
+  if patch_alveoli = 0
+  [
+    ;; Calculate the exponent term of the Gaussian function
+    let exponent-term (- (((pxcor - center-x) ^ 2 / (2 * stdev-x ^ 2)) + ((pycor - center-y) ^ 2 / (2 * stdev-y ^ 2))))
+    ;; Calculate the final Gaussian value
+    ;print (word "Exponent term: " exponent-term)
+    set patch_TGFbeta patch_TGFbeta + amplitude * exp exponent-term
+  ]
+end
+
 
 ; The following code "diffuses" growth factor from every patch to its neighbours using the NetLogo primitive "diffuse" and restirct to purple area.
 
