@@ -17,6 +17,7 @@ globals
   Gaussian-stdev
   Gaussian-radius
   percent-pixel-collagen
+  max-patch-collagen
   uptakePercent
   trailPercent
   secrete-spill-collagenFraction
@@ -228,6 +229,7 @@ to setup
   ;===== Initialize
   place-fibroblasts
   deposit-TGFbeta-on-sources
+  set max-patch-collagen max[total_patch_collagen] of patches
   reset-ticks
 end
 
@@ -276,6 +278,7 @@ to go
     )
     ]
     ;====================================================
+    set max-patch-collagen max[total_patch_collagen] of patches
     tick
   ]
   [
@@ -1165,6 +1168,17 @@ ss
 NIL
 HORIZONTAL
 
+MONITOR
+1271
+93
+1356
+138
+Max collagen
+max-patch-collagen
+3
+1
+11
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -1547,6 +1561,7 @@ export-world-and-image-before</setup>
     <metric>percent-pixel-collagen</metric>
     <metric>number-of-fibroblasts</metric>
     <metric>number-of-myofibroblasts</metric>
+    <metric>max-patch-collagen</metric>
     <steppedValueSet variable="ifc" first="20" step="20" last="100"/>
     <enumeratedValueSet variable="s-pentox">
       <value value="0"/>
