@@ -1,7 +1,10 @@
 clear all
 close all
-csv_filename = '1_Healthy_Lung_World_code world.csv'; % _t0.csv
-GlobalVars = readtable(csv_filename ,Range="A9:AX10")
+% This version is adapted to work with the NetLogo code optimized for
+% running Behavior Space, corresponding to this commit on github: 
+% https://github.com/ashleefv/ICERMNetLogo/commit/a0b8ae5171888be032ab3d1acba9402dfe68d1c1
+csv_filename = 'worldAfter-55.csv';
+GlobalVars = readtable(csv_filename,Range="A9:BH10",FileType="spreadsheet");
 
 turtlesStartRow = 13;
 turtlesEndRow = turtlesStartRow+GlobalVars.initial_fibroblast_cells;
@@ -9,7 +12,7 @@ turtlesDataCoords = ['A', num2str(turtlesStartRow),':R',num2str(turtlesEndRow)];
 Turtles = readtable(csv_filename ,Range=turtlesDataCoords);
 
 patchesStartRow = turtlesEndRow  + 3;
-patchesEndRow = patchesStartRow + (GlobalVars.max_pxcor-GlobalVars.min_pxcor+1)*(str2num(GlobalVars.max_pycor{1})-GlobalVars.min_pycor+1);
+patchesEndRow = patchesStartRow + (GlobalVars.max_pxcor-GlobalVars.min_pxcor+1)*(GlobalVars.max_pycor-GlobalVars.min_pycor+1);
 patchesDataCoords = ['A', num2str(patchesStartRow),':O',num2str(patchesEndRow)];
 Patches = readtable(csv_filename ,Range=patchesDataCoords);
 
