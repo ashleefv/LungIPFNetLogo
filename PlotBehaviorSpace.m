@@ -34,7 +34,7 @@ RunParams = readtable(csv_filename, Range = startCol + startRow + ":" + finalCol
 
 startRow = num2str(str2num(finalRow)+1); 
 finalRow = num2str(str2num(startRow) + 5);
-Reporters = readtable(csv_filename, Range = startCol + startRow + ":" + finalColLetter + finalRow);
+Reporters = readtable(csv_filename, Range = startCol + startRow + ":" + finalColLetter + finalRow)
 
 startRow = num2str(str2num(finalRow)+2);
 finalRow = num2str(str2num(startRow) + max(Reporters{end,2:finalColIndexStart})+1);

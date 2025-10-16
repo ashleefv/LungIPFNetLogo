@@ -9,12 +9,12 @@ GlobalVars = readtable(csv_filename,Range="A9:BH10",FileType="spreadsheet");
 turtlesStartRow = 13;
 turtlesEndRow = turtlesStartRow+GlobalVars.initial_fibroblast_cells;
 turtlesDataCoords = ['A', num2str(turtlesStartRow),':R',num2str(turtlesEndRow)];
-Turtles = readtable(csv_filename ,Range=turtlesDataCoords);
+Turtles = readtable(csv_filename ,Range=turtlesDataCoords,FileType="spreadsheet");
 
 patchesStartRow = turtlesEndRow  + 3;
 patchesEndRow = patchesStartRow + (GlobalVars.max_pxcor-GlobalVars.min_pxcor+1)*(GlobalVars.max_pycor-GlobalVars.min_pycor+1);
 patchesDataCoords = ['A', num2str(patchesStartRow),':O',num2str(patchesEndRow)];
-Patches = readtable(csv_filename ,Range=patchesDataCoords);
+Patches = readtable(csv_filename ,Range=patchesDataCoords,FileType="spreadsheet");
 
 x = Patches.pxcor;
 y = Patches.pycor;
