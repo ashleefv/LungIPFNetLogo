@@ -1,7 +1,9 @@
 clear all
 close all
 
+%% read in data for one patient starting world
 csv_filename = 'spreadsheet.csv';
+name = readtable(csv_filename,Range = "A3:A4")
 numberRuns = 60;
 numReporters = 6;
 numRunParams = 4;
@@ -34,31 +36,28 @@ RunParams = readtable(csv_filename, Range = startCol + startRow + ":" + finalCol
 
 startRow = num2str(str2num(finalRow)+1); 
 finalRow = num2str(str2num(startRow) + 5);
-Reporters = readtable(csv_filename, Range = startCol + startRow + ":" + finalColLetter + finalRow)
+Reporters = readtable(csv_filename, Range = startCol + startRow + ":" + finalColLetter + finalRow);
 
 startRow = num2str(str2num(finalRow)+2);
 finalRow = num2str(str2num(startRow) + max(Reporters{end,2:finalColIndexStart})+1);
 RunData = readtable(csv_filename, Range = "B" + startRow + ":" + finalColLetter + finalRow);
 
-figure(1)
+%% Bulk plots
 ReporterNumber = 1;
 timesteps = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
-ReporterNumber = 2;
-total_world_collagen = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
-% should add legend with DisplayName across runs
-plot(timesteps,total_world_collagen)
-xlabel('timesteps')
-ylabel('total world collagen')
+ReporterLabels = {'total world collagen', 'percent pixel collagen', 'number of fibroblasts', 'number of myofibroblasts', 'max pixel collagen'};
+for i = 2:numReporters
+    figure(i)
+    ReporterNumber = i;
+    reporterValues = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
+    % should add legend with DisplayName across runs
+    plot(timesteps,reporterValues)
+    xlabel('timesteps')
+    ylabel(ReporterLabels{i-1})
+end
 
-figure(2)
-ReporterNumber = 3;
-percent_pixel_collagen = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
-% should add legend with DisplayName across runs
-plot(timesteps,percent_pixel_collagen)
-xlabel('timesteps')
-ylabel('percent pixel collagen')
-
-RunParams{:,1}
+%% Process the experimental conditions
+RunParams{:,1};
 for rowIndex = 2:numRunParams+1
     % Extract the row as a cell array
     rowData = table2array(RunParams(rowIndex, 2:end));
@@ -69,7 +68,69 @@ for rowIndex = 2:numRunParams+1
     % Display results
     disp(strjoin(['Unique values in row'  num2str(rowIndex) 'for' string(RunParams{rowIndex,1})]))
     disp(uniqueValues);
+
+    if rowIndex == 5;
+        numReps = length(uniqueValues);
+    end
 end
+treatmentLabel = {" treatment: pentox off, pirf off", " treatment: pentox off, pirf on", " treatment: pentox on, pirf off", " treatment: pentox on, pirf on"};
+for rowIndex = 2    
+    % Extract the row as a cell array
+    rowData = table2array(RunParams(rowIndex, 2:end));
+    
+    % Find unique values in the row
+    uniqueValues = unique(rowData);
+
+    for i = 2:numReporters
+        ReporterNumber = i;
+        for k = 1:length(uniqueValues)
+            figure(i+numReporters)
+            subplot(1,length(uniqueValues),k);
+            hold on
+            matchingIndices = find(ismember(rowData,uniqueValues(k) ) );
+            reporterValues = RunData{:,(matchingIndices-1)*numReporters+ReporterNumber};
+            plot(timesteps(:,matchingIndices)/(24*7),reporterValues)
+            xlabel('Time (weeks)')
+            ylabel(ReporterLabels{i-1})
+            title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+            %legend('-DynamicLegend');
+            hold off
+
+            % assuming that all time vectors are identical
+            time = timesteps(:,1)/(24*7); % in weeks
+            figure(i+2*numReporters)
+            subplot(1,length(uniqueValues),k);
+            hold on
+
+            % statistics on replicates. Using the known structure of the
+            % data with the replicates being sequential
+            
+            numTreatments = size(reporterValues,2)/numReps;
+            mean_reporterValues = zeros(size(reporterValues,1),numTreatments);
+            std_reporterValues = zeros(size(reporterValues,1),numTreatments);
+            co = orderedcolors("gem");
+            for m = 1:numTreatments              
+                indices = (m-1)*(numReps)+[1:numReps];
+                mean_reporterValues(:,m) = mean(reporterValues(:,indices),2);
+                % Plot mean curve
+                meanHandles(m) = plot(time, mean_reporterValues(:,m), 'color', co(m,:), 'LineWidth', 3,'DisplayName',strcat('Mean of ', string(treatmentLabel(m))));
+            end
+            legend(meanHandles, 'Location', 'best');
+            for m = 1:numTreatments   
+                indices = (m-1)*(numReps)+[1:numReps];
+                plot(time,reporterValues(:,indices),'color', co(m,:), 'LineWidth', 0.5,'HandleVisibility', 'off');
+            end
+
+            % Labels and formatting
+            xlabel('Time (weeks)');
+            ylabel(ReporterLabels{i-1})
+
+            title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+            hold off
+        end
+    end
+end
+
 
 
 % [A B C D E F G H I J K L M N O ...
