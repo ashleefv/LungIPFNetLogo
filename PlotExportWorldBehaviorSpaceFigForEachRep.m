@@ -158,8 +158,9 @@ for z = 1:3
         heightInches = 5;
         
         % Get current size in inches
-        set(fig, 'Units', 'Inches');
         figPos = get(fig, 'Position');
+        set(fig, 'Units', 'Inches');
+
         
         
         % Set figure size
