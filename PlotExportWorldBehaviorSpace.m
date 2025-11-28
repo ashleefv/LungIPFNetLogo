@@ -3,7 +3,7 @@ close all
 % This version is adapted to work with the NetLogo code optimized for
 % running Behavior Space, corresponding to this commit on github: 
 % https://github.com/ashleefv/ICERMNetLogo/commit/a0b8ae5171888be032ab3d1acba9402dfe68d1c1
-csv_filename = 'worldAfter-55.csv';
+csv_filename = 'BehaviorSpaceResults\Results-V10T03-280-A1-101525\worldAfter-51.csv';%'worldAfter-55.csv';
 GlobalVars = readtable(csv_filename,Range="A9:BH10",FileType="spreadsheet");
 
 turtlesStartRow = 13;
