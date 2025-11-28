@@ -68,7 +68,7 @@ fig1Colors = [
     0.8 0.0 0.0;        % red
 ];
 
-ReporterLabels = {'total world collagen', 'percent pixel collagen', 'number of fibroblasts', 'number of myofibroblasts', 'max pixel collagen'};
+ReporterLabels = {'total world collagen', '% pixel collagen', 'fibroblasts', 'myofibroblasts', 'max pixel collagen'};
 for i = 2:numReporters
     figure(1)
     subplot(length(ResultsPath),numReporters-1,(z-1)*(numReporters-1) + (i-1));
@@ -89,6 +89,7 @@ for i = 2:numReporters
     
         % Plot each run with its style
         plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor);
+        
         hold on;
     end
     hold off;
@@ -96,9 +97,7 @@ for i = 2:numReporters
     xlim([xmin xmax])
     xlabel('Time (weeks)');
     ylabel(ReporterLabels{i-1})
-    if i == 2;
-        text(-0.3, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
-    end
+
 end
 
 % 
@@ -127,7 +126,7 @@ end
 %     % Find unique values in the row
 %     uniqueValues = unique(rowData);
 % 
-%     for i = 2:numReporters
+%     for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers of fibroblasts or myofibroblasts
 %         ReporterNumber = i;
 %         for k = 1:length(uniqueValues)
 %             figure(1+(i-1))
@@ -182,7 +181,6 @@ end
 %             end
 %             hold off
 % 
-%             if i == 2 || i == 3 || i == 6 % don't make bar graphs for final numbers of fibroblasts or myofibroblasts
 %                 figure(2*(numReporters-1) + i)
 %                 subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
 %                 hold on
@@ -216,7 +214,6 @@ end
 %                     text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
 %                 end
 %                 hold off
-%             end
 %         end
 %     end
 % end
@@ -226,6 +223,27 @@ end
 
 figure(1)
 hold on
+
+
+% Get handle to all axes created by subplot
+allAxes = findall(gcf, 'Type', 'axes');
+
+% Apply font size to each subplot
+for k = 1:length(allAxes)
+    set(allAxes(k), 'FontSize', 8);
+end
+
+
+% Sort them in the order they were created (subplot order)
+allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
+
+% Get Y-limits from the 5th panel
+yLimitsPanel5 = ylim(allAxes(5));
+
+% Apply same limits to panels 10 and 15
+ylim(allAxes(10), yLimitsPanel5);
+ylim(allAxes(15), yLimitsPanel5);
+
 % Create an invisible axes that spans the whole figure
 axLegend = axes('Position',[0 0 1 1],'Visible','off');
 hold(axLegend, 'on');
@@ -238,46 +256,68 @@ for c = 1:length(fig1Colors)
 end
 
 % --- Line Style Legend ---
-styleLabels = {"52 weeks: none","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox+pirf"};
+styleLabels = {"none","pirf","pentox","pentox & pirf"};
 styleHandles = gobjects(length(lineStyles),1);
 for s = 1:length(lineStyles)
     styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 2);
 end
 
+% Combine handles: colors first, then styles
+allHandles = [colorHandles; styleHandles];
 
 % Make labels a uniform string array (avoids mixed-type cell issues)
 labels = [string(colorLabels), string(styleLabels)];
 
 % Create combined legend at bottom of the entire figure (target the legend axes explicitly)
-lgd = legend(axLegend, [colorHandles; styleHandles], labels, ...
-    'Orientation', 'horizontal', 'Location', 'southoutside');
+lgd = legend(axLegend, allHandles, labels, ...
+    'Orientation', 'horizontal', 'Location', 'southoutside','Fontsize',8);
 %lgd.Title.String = 'Color = IFC | Line Style = 52-week treatment';
 lgd.Box = 'off';
 
-        figname = strcat('PlotBSAll');
-        %saveas(gcf,strcat(figname, '.png'));
+% Force two rows: first row = colors, second row = styles
+lgd.NumColumns = max(length(colorHandles), length(styleHandles));
 
-        fig= gcf;
+cols = numReporters-1;
+for r = 1:3
+    % Find the first subplot in this row
+    idx = (r-1)*cols + 1;
+    ax = allAxes(idx);
 
-        % Adjust based on figure's aspect ratio
-        widthInches = 7.5;
-        heightInches = 5;
-        
-        % Get current size in inches
-        set(fig, 'Units', 'Inches');
-        figPos = get(fig, 'Position');
-        
-        
-        % Set figure size
-        set(fig, 'Position', [1, 1, widthInches, heightInches]);
-        set(fig, 'PaperUnits', 'Inches');
-        set(fig, 'PaperSize', [widthInches, heightInches]);
-        figPos = get(fig, 'Position');
-        set(fig, 'PaperPositionMode', 'manual');
-        fig = gcf;
-        
-        %figname = 'test';
-        exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+    % Add text to the left side of the row
+    text(ax, -0.6, 0.5, ResultsString(r), ...
+        'Units', 'normalized', ...
+        'HorizontalAlignment', 'center', ...
+        'FontSize', 8);
+
+end
+
+
+
+figname = strcat('PlotBSAll');
+%saveas(gcf,strcat(figname, '.png'));
+
+fig= gcf;
+
+% Adjust based on figure's aspect ratio
+widthInches = 7.5;
+heightInches = 5;
+
+% Get current size in inches
+figPos = get(fig, 'Position');
+set(fig, 'Units', 'Inches');
+
+
+
+% Set figure size
+set(fig, 'Position', [1, 1, widthInches, heightInches]);
+set(fig, 'PaperUnits', 'Inches');
+set(fig, 'PaperSize', [widthInches, heightInches]);
+figPos = get(fig, 'Position');
+set(fig, 'PaperPositionMode', 'manual');
+fig = gcf;
+
+%figname = 'test';
+exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
 
 
 % % Get handles to all open figures
