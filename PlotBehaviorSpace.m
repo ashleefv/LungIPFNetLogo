@@ -1,9 +1,10 @@
 clear all
 close all
+warning('off','all');
 
 %% All the patients tested
-ResultsPath = {"BehaviorSpaceResults\Results-V101T03-279-A1-101525","BehaviorSpaceResults\Results-V101T03-279-C1-101525","BehaviorSpaceResults\Results-V101T03-279-D1-101525"};
-ResultsString = {"A1","C1","D1"};
+ResultsPath = {"BehaviorSpaceResults\Results-V10T03-280-A1-101525","BehaviorSpaceResults\Results-V19S23-092-C1-101525","BehaviorSpaceResults\Results-V10T03-279-D1-101525"};
+ResultsString = {"A","C","D"};
 for z = 1:length(ResultsPath)
 %% read in data for one patient starting world
 csv_filename =  string(ResultsPath(z))+'\spreadsheet.csv';
@@ -54,6 +55,19 @@ time = timesteps(:,1); % in weeks
 xmin = min(min(time));
 xmax = max(max(time));
 
+% Define line styles in the desired sequence
+lineStyles = {'-', '--', '-.', ':'};
+Replicates = 3;
+TreatmentGroups = 4;
+colorCycling = Replicates*TreatmentGroups ;
+fig1Colors = [
+    [124 80 164]/255; % purple
+    0.2 0.4 0.8;        % dark blue
+    1.0 0.8 0.0;        % gold
+    1.0 0.4 0.0;        % dark orange
+    0.8 0.0 0.0;        % red
+];
+
 ReporterLabels = {'total world collagen', 'percent pixel collagen', 'number of fibroblasts', 'number of myofibroblasts', 'max pixel collagen'};
 for i = 2:numReporters
     figure(1)
@@ -61,7 +75,24 @@ for i = 2:numReporters
     ReporterNumber = i;
     reporterValues = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
     % should add legend with DisplayName across runs
-    plot(time,reporterValues)
+    
+    for r = 1:numberRuns
+        % Determine which line style to use
+        styleIndex = mod(floor((r-1)/Replicates), length(lineStyles)) + 1;
+        currentStyle = lineStyles{styleIndex};
+
+
+        % Determine color (change every 12 runs)
+        colorIndex = floor((r-1)/colorCycling) + 1;
+        currentColor = fig1Colors(colorIndex, :);
+
+    
+        % Plot each run with its style
+        plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor);
+        hold on;
+    end
+    hold off;
+
     xlim([xmin xmax])
     xlabel('Time (weeks)');
     ylabel(ReporterLabels{i-1})
@@ -69,128 +100,186 @@ for i = 2:numReporters
         text(-0.3, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
     end
 end
+
 % 
-%% Process the experimental conditions
-RunParams{:,1};
-for rowIndex = 2:numRunParams+1
-    % Extract the row as a cell array
-    rowData = table2array(RunParams(rowIndex, 2:end));
+% %% Process the experimental conditions
+% RunParams{:,1};
+% for rowIndex = 2:numRunParams+1
+%     % Extract the row as a cell array
+%     rowData = table2array(RunParams(rowIndex, 2:end));
+% 
+%     % Find unique values in the row
+%     uniqueValues = unique(rowData);
+% 
+%     % Display results
+%     disp(strjoin(['Unique values in row'  num2str(rowIndex) 'for' string(RunParams{rowIndex,1})]))
+%     disp(uniqueValues);
+% 
+%     if rowIndex == 5;
+%         numReps = length(uniqueValues);
+%     end
+% end
+% treatmentLabel = {" treatment: none", " treatment: pirf", " treatment: pentox", " treatment: pentox and pirf"};
+% for rowIndex = 2    
+%     % Extract the row as a cell array
+%     rowData = table2array(RunParams(rowIndex, 2:end));
+% 
+%     % Find unique values in the row
+%     uniqueValues = unique(rowData);
+% 
+%     for i = 2:numReporters
+%         ReporterNumber = i;
+%         for k = 1:length(uniqueValues)
+%             figure(1+(i-1))
+%             subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
+%             hold on
+%             matchingIndices = find(ismember(rowData,uniqueValues(k) ) );
+%             reporterValues = RunData{:,(matchingIndices-1)*numReporters+ReporterNumber};
+%             plot(time,reporterValues)
+%             xlim([xmin xmax])
+%             xlabel('Time (weeks)')
+%             ylabel(ReporterLabels{i-1})
+%             title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+%             %legend('-DynamicLegend');
+%             if k == 1;
+%                 text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
+%             end
+%             hold off
+% 
+%             figure((numReporters-1) + i)
+%             subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
+%             hold on
+% 
+%             % statistics on replicates. Using the known structure of the
+%             % data with the replicates being sequential
+% 
+%             numTreatments = size(reporterValues,2)/numReps;
+%             mean_reporterValues = zeros(size(reporterValues,1),numTreatments);
+%             std_reporterValues = zeros(size(reporterValues,1),numTreatments);
+%             co = orderedcolors("gem");
+%             for m = 1:numTreatments              
+%                 indices = (m-1)*(numReps)+[1:numReps];
+%                 mean_reporterValues(:,m) = mean(reporterValues(:,indices),2);
+%                 std_reporterValues(:,m) = std(reporterValues(:,indices),0,2);
+%                 % Plot mean curve
+%                 meanHandles(m) = plot(time, mean_reporterValues(:,m), 'color', co(m,:), 'LineWidth', 3,'DisplayName',strcat('Mean of ', string(treatmentLabel(m))));
+%                 xlim([xmin xmax])
+%             end
+%             legend(meanHandles, 'Location', 'best');
+%             for m = 1:numTreatments   
+%                 indices = (m-1)*(numReps)+[1:numReps];
+%                 plot(time,reporterValues(:,indices),'color', co(m,:), 'LineWidth', 0.5,'HandleVisibility', 'off');
+%                 xlim([xmin xmax])
+%             end
+% 
+%             % Labels and formatting
+%             xlabel('Time (weeks)');
+%             ylabel(ReporterLabels{i-1})
+% 
+%             title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+%             if k == 1;
+%                 text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
+%             end
+%             hold off
+% 
+%             if i == 2 || i == 3 || i == 6 % don't make bar graphs for final numbers of fibroblasts or myofibroblasts
+%                 figure(2*(numReporters-1) + i)
+%                 subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
+%                 hold on
+%                 y = mean_reporterValues(end,:);
+%                 barError = std_reporterValues(end,:);
+% 
+%                 b = bar(y);
+%                 hold on
+%                 x = b.XData;
+% 
+%                 % Get the default color order
+%                 colors = get(gca, 'ColorOrder');
+%                 numColors = size(colors, 1);
+% 
+%                 % Set each bar to a different color from the color order
+%                 for s = 1:length(y)
+%                     b.FaceColor = 'flat';         % Enable individual coloring
+%                     b.CData(s,:) = colors(mod(s-1, numColors)+1, :);
+%                 end
+% 
+% 
+%                 % Set custom x-axis labels
+%                 xticks(x);
+%                 xticklabels(treatmentLabel);
+%                 xtickangle(45);  % Optional: rotate labels for readability
+%                 ylabel(ReporterLabels{i-1} + " after 52 weeks")
+%                 title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+% 
+%                 errorbar(x,y,barError,'k', 'linestyle', 'none')
+%                 if k == 1;
+%                     text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
+%                 end
+%                 hold off
+%             end
+%         end
+%     end
+% end
 
-    % Find unique values in the row
-    uniqueValues = unique(rowData);
 
-    % Display results
-    disp(strjoin(['Unique values in row'  num2str(rowIndex) 'for' string(RunParams{rowIndex,1})]))
-    disp(uniqueValues);
-
-    if rowIndex == 5;
-        numReps = length(uniqueValues);
-    end
 end
-treatmentLabel = {" treatment: pentox off, pirf off", " treatment: pentox off, pirf on", " treatment: pentox on, pirf off", " treatment: pentox on, pirf on"};
-for rowIndex = 2    
-    % Extract the row as a cell array
-    rowData = table2array(RunParams(rowIndex, 2:end));
 
-    % Find unique values in the row
-    uniqueValues = unique(rowData);
+figure(1)
+hold on
+% Create an invisible axes that spans the whole figure
+axLegend = axes('Position',[0 0 1 1],'Visible','off');
+hold(axLegend, 'on');
 
-    for i = 2:numReporters
-        ReporterNumber = i;
-        for k = 1:length(uniqueValues)
-            figure(1+(i-1))
-            subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
-            hold on
-            matchingIndices = find(ismember(rowData,uniqueValues(k) ) );
-            reporterValues = RunData{:,(matchingIndices-1)*numReporters+ReporterNumber};
-            plot(time,reporterValues)
-            xlim([xmin xmax])
-            xlabel('Time (weeks)')
-            ylabel(ReporterLabels{i-1})
-            title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
-            %legend('-DynamicLegend');
-            if k == 1;
-                text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
-            end
-            hold off
+% --- Color Legend ---
+colorLabels = {'ifc = 20', 'ifc = 40', 'ifc = 60', 'ifc = 80', 'ifc = 100'};
+colorHandles = gobjects(length(fig1Colors),1);
+for c = 1:length(fig1Colors)
+    colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', fig1Colors(c,:), 'LineWidth', 2);
+end
 
-            figure((numReporters-1) + i)
-            subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
-            hold on
+% --- Line Style Legend ---
+styleLabels = {"52 weeks: none","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox+pirf"};
+styleHandles = gobjects(length(lineStyles),1);
+for s = 1:length(lineStyles)
+    styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 2);
+end
 
-            % statistics on replicates. Using the known structure of the
-            % data with the replicates being sequential
 
-            numTreatments = size(reporterValues,2)/numReps;
-            mean_reporterValues = zeros(size(reporterValues,1),numTreatments);
-            std_reporterValues = zeros(size(reporterValues,1),numTreatments);
-            co = orderedcolors("gem");
-            for m = 1:numTreatments              
-                indices = (m-1)*(numReps)+[1:numReps];
-                mean_reporterValues(:,m) = mean(reporterValues(:,indices),2);
-                std_reporterValues(:,m) = std(reporterValues(:,indices),0,2);
-                % Plot mean curve
-                meanHandles(m) = plot(time, mean_reporterValues(:,m), 'color', co(m,:), 'LineWidth', 3,'DisplayName',strcat('Mean of ', string(treatmentLabel(m))));
-                xlim([xmin xmax])
-            end
-            legend(meanHandles, 'Location', 'best');
-            for m = 1:numTreatments   
-                indices = (m-1)*(numReps)+[1:numReps];
-                plot(time,reporterValues(:,indices),'color', co(m,:), 'LineWidth', 0.5,'HandleVisibility', 'off');
-                xlim([xmin xmax])
-            end
+% Make labels a uniform string array (avoids mixed-type cell issues)
+labels = [string(colorLabels), string(styleLabels)];
 
-            % Labels and formatting
-            xlabel('Time (weeks)');
-            ylabel(ReporterLabels{i-1})
+% Create combined legend at bottom of the entire figure (target the legend axes explicitly)
+lgd = legend(axLegend, [colorHandles; styleHandles], labels, ...
+    'Orientation', 'horizontal', 'Location', 'southoutside');
+%lgd.Title.String = 'Color = IFC | Line Style = 52-week treatment';
+lgd.Box = 'off';
 
-            title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
-            if k == 1;
-                text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
-            end
-            hold off
+        figname = strcat('PlotBSAll');
+        %saveas(gcf,strcat(figname, '.png'));
 
-            if i == 2 || i == 3 || i == 6 % don't make bar graphs for final numbers of fibroblasts or myofibroblasts
-                figure(2*(numReporters-1) + i)
-                subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
-                hold on
-                y = mean_reporterValues(end,:);
-                barError = std_reporterValues(end,:);
-    
-                b = bar(y);
-                hold on
-                x = b.XData;
+        fig= gcf;
+
+        % Adjust based on figure's aspect ratio
+        widthInches = 7.5;
+        heightInches = 5;
         
-                % Get the default color order
-                colors = get(gca, 'ColorOrder');
-                numColors = size(colors, 1);
-    
-                % Set each bar to a different color from the color order
-                for s = 1:length(y)
-                    b.FaceColor = 'flat';         % Enable individual coloring
-                    b.CData(s,:) = colors(mod(s-1, numColors)+1, :);
-                end
-    
-    
-                % Set custom x-axis labels
-                xticks(x);
-                xticklabels(treatmentLabel);
-                xtickangle(45);  % Optional: rotate labels for readability
-                ylabel(ReporterLabels{i-1} + " after 52 weeks")
-                title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
-    
-                errorbar(x,y,barError,'k', 'linestyle', 'none')
-                if k == 1;
-                    text(-0.5, 0.5, string(ResultsString(z)), 'Units', 'normalized', 'FontWeight', 'Normal')
-                end
-                hold off
-            end
-        end
-    end
-end
+        % Get current size in inches
+        set(fig, 'Units', 'Inches');
+        figPos = get(fig, 'Position');
+        
+        
+        % Set figure size
+        set(fig, 'Position', [1, 1, widthInches, heightInches]);
+        set(fig, 'PaperUnits', 'Inches');
+        set(fig, 'PaperSize', [widthInches, heightInches]);
+        figPos = get(fig, 'Position');
+        set(fig, 'PaperPositionMode', 'manual');
+        fig = gcf;
+        
+        %figname = 'test';
+        exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
 
 
-end
 % % Get handles to all open figures
 % figHandles = findall(0, 'Type', 'figure');
 % 
@@ -198,3 +287,5 @@ end
 % for i = 1:length(figHandles)
 %     savefig(figHandles(i), sprintf('Figure_%d.fig', i));
 % end
+
+warning('on', 'all')
