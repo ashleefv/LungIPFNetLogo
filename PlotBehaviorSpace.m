@@ -116,7 +116,7 @@ for rowIndex = 2:numRunParams+1
         numReps = length(uniqueValues);
     end
 end
-treatmentLabel = {" treatment: none", " treatment: pirf", " treatment: pentox", " treatment: pentox and pirf"};
+treatmentLabel = {"none", "pirf", "pentox", "     pentox & pirf"};
 for rowIndex = 2    
     % Extract the row as a cell array
     rowData = table2array(RunParams(rowIndex, 2:end));
@@ -190,27 +190,57 @@ for rowIndex = 2
             y = mean_reporterValues(end,:);
             barError = std_reporterValues(end,:);
 
-            b = bar(y);
+            b = bar(y, 'FaceColor', 'flat');
             hold on
             x = b.XData;
 
-            % Get the default color order
-            colors = get(gca, 'ColorOrder');
-            numColors = size(colors, 1);
+            numBars = numel(y);
+            x = 1:numBars;
 
-            % Set each bar to a different color from the color order
-            for s = 1:length(y)
-                b.FaceColor = 'flat';         % Enable individual coloring
-                b.CData(s,:) = colors(mod(s-1, numColors)+1, :);
+
+            % % Get the default color order
+            % colors = get(gca, 'ColorOrder');
+            % numColors = size(colors, 1);
+            % 
+            % % Set each bar to a different color from the color order
+            % for s = 1:length(y)
+            %     b.FaceColor = 'flat';         % Enable individual coloring
+            %     b.CData(s,:) = colors(mod(s-1, numColors)+1, :);
+            % end
+
+            % Base color for the treatment group (from your palette)
+            % If each subset corresponds to one treatment family, pick its base color.
+            % Example: use figColors(k,:) as base color for this subset k
+            baseColor = figColors(k, :);    % adjust if you want a different mapping
+            
+            % Desired intensity factors for bars (1, 0.75, 0.5, 0.25)
+            intensity = [1.0, 0.75, 0.5, 0.25];
+            
+            % Ensure we only use as many factors as bars present
+            intensity = intensity(1:numBars);
+            
+            % --- LIGHTER variant (towards white): c_out = 1 - (1 - c_in)*pct ---
+            scaledColors = zeros(numBars, 3);
+            for s = 1:numBars
+                pct = intensity(s);
+                scaledColors(s, :) = 1 - (1 - baseColor) * pct;
             end
+            
+            % Assign per-bar colors
+            b.CData = scaledColors;
 
 
-            % Set custom x-axis labels
-            xticks(x);
-            xticklabels(treatmentLabel);
-            xtickangle(45);  % Optional: rotate labels for readability
-            ylabel(ReporterLabels{i-1} + " after 52 weeks")
-            title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+            if z == 3
+                % Set custom x-axis labels
+                xticks(x);
+                xticklabels(treatmentLabel);
+                xtickangle(90);  % Optional: rotate labels for readability
+            else
+                xticks(x);
+                xticklabels({});
+            end
+            ylabel({ReporterLabels{i-1}; " at 52 weeks"})
+            %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
 
             errorbar(x,y,barError,'k', 'linestyle', 'none')
             hold off
@@ -403,7 +433,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
 
     
     end
-    ReporterLabels{2-1} = 'perc pixel collagen';
+    ReporterLabels{3-1} = 'perc pixel collagen';
     figname = strcat('PlotBSforEachifc',ReporterLabels{i-1});
     %saveas(gcf,strcat(figname, '.png'));
     
@@ -429,6 +459,116 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     
     %figname = 'test';
     exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+
+    figure(2*(numReporters-1) + i)
+
+    hold on
+
+    % Get handle to all axes created by subplot
+    allAxes = findall(gcf, 'Type', 'axes');
+    
+    % Apply font size to each subplot
+    for k = 1:length(allAxes)
+        set(allAxes(k), 'FontSize', 8);
+    end
+
+    % Sort them in the order they were created (subplot order)
+    allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
+    
+    if i == 2 | i == 3
+        % Get Y-limits from the 10th panel
+        yLimitsPanel10 = ylim(allAxes(10));
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel10);
+        end
+    end
+    if i == 6
+        % Get Y-limits from the 3rd panel
+        yLimitsPanel3 = ylim(allAxes(3));
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel3);
+        end
+    end
+
+    % Create an invisible axes that spans the whole figure
+    axLegend = axes('Position',[0 0 1 1],'Visible','off');
+    hold(axLegend, 'on');
+    
+    % --- Color Legend ---
+    colorLabels = {'ifc = 20', 'ifc = 40', 'ifc = 60', 'ifc = 80', 'ifc = 100'};
+    colorHandles = gobjects(length(figColors),1);
+    for c = 1:length(figColors)
+        colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 2);
+    end
+    
+  
+    
+    % Combine handles: colors first, then styles
+    allHandles = [colorHandles];
+    
+    % Make labels a uniform string array (avoids mixed-type cell issues)
+    labels = [string(colorLabels)];
+    
+    % Create combined legend at bottom of the entire figure (target the legend axes explicitly)
+    lgd = legend(axLegend, allHandles, labels, ...
+        'Orientation', 'horizontal', 'Location', 'southoutside','Fontsize',8);
+    %lgd.Title.String = 'Color = IFC | Line Style = 52-week treatment';
+    lgd.Box = 'off';
+
+    
+    cols = numReporters-1;
+    for r = 1:3
+        % Find the first subplot in this row
+        idx = (r-1)*cols + 1;
+        ax = allAxes(idx);
+        % Add text to the left side of the row
+        if i == 6
+        text(ax, -1.3, 0.5, ResultsString(r), ...
+            'Units', 'normalized', ...
+            'HorizontalAlignment', 'center', ...
+            'FontSize', 8);
+        else
+            % Add text to the left side of the row
+             text(ax, -0.8, 0.5, ResultsString(r), ...
+            'Units', 'normalized', ...
+            'HorizontalAlignment', 'center', ...
+            'FontSize', 8);
+        end
+
+    
+    end
+    ReporterLabels{3-1} = 'perc pixel collagen';
+    figname = strcat('PlotBSbargraphsforEachifc',ReporterLabels{i-1});
+    %saveas(gcf,strcat(figname, '.png'));
+    
+    fig= gcf;
+    
+    % Adjust based on figure's aspect ratio
+    widthInches = 7.5;
+    heightInches = 5;
+    
+    % Get current size in inches
+    figPos = get(fig, 'Position');
+    set(fig, 'Units', 'Inches');
+    
+    
+    
+    % Set figure size
+    set(fig, 'Position', [1, 1, widthInches, heightInches]);
+    set(fig, 'PaperUnits', 'Inches');
+    set(fig, 'PaperSize', [widthInches, heightInches]);
+    figPos = get(fig, 'Position');
+    set(fig, 'PaperPositionMode', 'manual');
+    fig = gcf;
+    
+    %figname = 'test';
+    exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+
+
 end
 
             
