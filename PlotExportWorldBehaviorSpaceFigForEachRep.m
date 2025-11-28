@@ -172,7 +172,7 @@ for z = 1:3
         
         %figname = 'test';
         exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
-        exportgraphics(fig,strcat(figname, '.pdf'),'Resolution',600)
+%        exportgraphics(fig,strcat(figname, '.pdf'),'Resolution',600)
 
     end
 end
