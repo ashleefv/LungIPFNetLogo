@@ -1,5 +1,6 @@
 
 clear all; close all; warning('off','all');
+addpath(genpath('natsortfiles'));
 
 folder{1} = 'BehaviorSpaceResults\Results-V10T03-280-A1-101525';
 folder{2} = 'BehaviorSpaceResults\Results-V19S23-092-C1-101525';
@@ -135,7 +136,7 @@ for z = 1:3
                 end
                 axis(cbAx,[collagenEdges(1) collagenEdges(end) 0 1]);
                 set(cbAx,'YTick',[], 'XTick',collagenEdges,'fontsize',6);
-                xtickangle(cbAx, 45);
+                xtickangle(cbAx, 0);
             end
 
             % Row 3: TGF-beta plots
@@ -153,7 +154,7 @@ for z = 1:3
                 end
                 axis(cbAx,[tgfEdges(1) tgfEdges(end) 0 1]);
                 set(cbAx,'YTick',[], 'XTick',tgfEdges,'fontsize',6);
-                xlabel(cbAx,'patch\_tgfbeta/initialSourceTGFbeta','fontsize',8);
+                %xlabel(cbAx,'patch\_tgfbeta/initialSourceTGFbeta','fontsize',8);
                 xtickangle(cbAx, 90);
 
 
@@ -162,15 +163,15 @@ for z = 1:3
 
         % Add row labels as annotations (outside subplots)
         annotation('textbox', [0.02 0.78 0.08 0.05], 'String', rowLabels{1}, ...
-            'FontSize', 8, 'HorizontalAlignment', 'center', ...
+            'FontSize', 10, 'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'middle', 'EdgeColor', 'none');
         
         annotation('textbox', [0.02 0.48 0.08 0.05], 'String', rowLabels{2}, ...
-            'FontSize', 8,  'HorizontalAlignment', 'center', ...
+            'FontSize', 10,  'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'middle', 'EdgeColor', 'none');
         
         annotation('textbox', [0.02 0.18 0.08 0.05], 'String', rowLabels{3}, ...
-            'FontSize', 8,  'HorizontalAlignment', 'center', ...
+            'FontSize', 10,  'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'middle', 'EdgeColor', 'none');
 
         figname = strcat('combined_gridZoom_', cases{z}, replicateLabels{r});
@@ -179,8 +180,8 @@ for z = 1:3
         fig= gcf;
 
         % Adjust based on figure's aspect ratio
-        widthInches = 3.5;
-        heightInches = 5;
+        widthInches = 5;
+        heightInches = 7.5;
         
         % Get current size in inches
         figPos = get(fig, 'Position');
@@ -219,7 +220,7 @@ for z = 1:3
 
 
         % Legend axis below row 1
-        legendAx = axes('Position',[0.14 0.67 0.77 0.04]); % adjust Y for below row 1
+        legendAx = axes('Position',[0.14 0.65 0.77 0.04]); % adjust Y for below row 1
         hold(legendAx,'on');
 
         % Define colors
@@ -263,14 +264,15 @@ for z = 1:3
             if k == 5
 
                 % Add collagen colorbar below row 2
-                cbAx = axes('Position',[0.14 0.39 0.75 0.02]); % adjust Y for below row 2
+                cbAx = axes('Position',[0.14 0.38 0.75 0.02]); % adjust Y for below row 2
                 hold(cbAx,'on');
                 for i = 1:length(collagenEdges)-1
                     patch([collagenEdges(i) collagenEdges(i+1) collagenEdges(i+1) collagenEdges(i)], [0 0 1 1], collagenColors(i,:), 'EdgeColor', 'k');
                 end
                 axis(cbAx,[collagenEdges(1) collagenEdges(end) 0 1]);
+                %xtickformat('%1.1e')
                 set(cbAx,'YTick',[], 'XTick',collagenEdges,'fontsize',6);
-                xtickangle(cbAx, 45);
+                xtickangle(cbAx, 0);
             end
 
             % Row 3: TGF-beta plots
@@ -281,14 +283,14 @@ for z = 1:3
             if k == 5
 
                 % Add TGF-beta colorbar below row 3
-                cbAx = axes('Position',[0.14 0.09 0.75 0.02]); % adjust Y for bottom
+                cbAx = axes('Position',[0.14 0.08 0.75 0.02]); % adjust Y for bottom
                 hold(cbAx,'on');
                 for i = 1:length(tgfEdges)-1
                     patch([tgfEdges(i) tgfEdges(i+1) tgfEdges(i+1) tgfEdges(i)], [0 0 1 1], tgfColors(i,:), 'EdgeColor', 'k');
                 end
                 axis(cbAx,[tgfEdges(1) tgfEdges(end) 0 1]);
                 set(cbAx,'YTick',[], 'XTick',tgfEdges,'fontsize',6);
-                xlabel(cbAx,'patch\_tgfbeta/initialSourceTGFbeta','fontsize',8);
+                %xlabel(cbAx,'patch\_tgfbeta/initialSourceTGFbeta','fontsize',8);
                 xtickangle(cbAx, 90);
 
 
@@ -315,7 +317,7 @@ for z = 1:3
 
         % Adjust based on figure's aspect ratio
         widthInches = 7.5;
-        heightInches = 5;
+        heightInches = 3.6; %to compact the vertical spacing
 
         % Get current size in inches
         figPos = get(fig, 'Position');
@@ -332,12 +334,59 @@ for z = 1:3
         fig = gcf;
 
         %figname = 'test';
-        exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+        exportgraphics(fig,strcat(figname, '_compact.png'),'Resolution',600)
 %        exportgraphics(fig,strcat(figname, '.pdf'),'Resolution',600)
     end
     close all
 end
 warning('on', 'all')
+
+% =============================
+% Combine compact Rep 1–3 panels
+% =============================
+cases = {'A','C','D'};
+repLetters = {'a) Rep. 1','b) Rep. 2','c) Rep. 3'};      % labels for each replicate
+outputDPI = 600;
+
+for z = 1:numel(cases)
+    ims = cell(1,3);
+    % Read compact per-replicate images
+    for r = 1:3
+        fname = sprintf('combined_grid_%sRep%d_compact.png', cases{z}, r);
+        if ~isfile(fname)
+            error('Expected file not found: %s. Make sure Step 1 exported compact images.', fname);
+        end
+        ims{r} = imread(fname);
+    end
+
+    % Normalize widths so they tile cleanly (preserve aspect ratio)
+    targetW = min(cellfun(@(I) size(I,2), ims));  % smallest width
+    for r = 1:3
+        if size(ims{r},2) ~= targetW
+            ims{r} = imresize(ims{r}, [NaN, targetW]);  % requires Image Processing Toolbox
+        end
+    end
+
+    % Create a tall figure (portrait) and tile 3 rows x 1 column
+    fig = figure('Units','inches','Position',[1 1 7.5 11]); % ~letter portrait
+    tl = tiledlayout(fig, 3, 1, 'TileSpacing','compact', 'Padding','compact');
+
+    for r = 1:3
+        ax = nexttile(tl);
+        imshow(ims{r}, 'Parent', ax, 'Border', 'tight');
+        axis(ax, 'off');
+
+        % Add label in the upper-left corner of each image
+        text(ax, 0.01, 0.99, repLetters{r}, ...
+            'Units','normalized', ...
+            'HorizontalAlignment','left', 'VerticalAlignment','top', ...
+            'FontSize', 10, 'Color','k');
+    end
+
+    outname = sprintf('combined_grid_%s_Rep1-3_compact.png', cases{z});
+    exportgraphics(fig, outname, 'Resolution', outputDPI);
+    close(fig);
+end
 
 function plotPatchQuantityWithCollagenBoundary(x,y,patchquantity,QuantNameString,patchcolor,edges,colors)
     x_unique = unique(x); y_unique = unique(y);
