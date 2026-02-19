@@ -334,7 +334,7 @@ for z = 1:3
         fig = gcf;
 
         %figname = 'test';
-        exportgraphics(fig,strcat(figname, '_compact.png'),'Resolution',600)
+        exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
 %        exportgraphics(fig,strcat(figname, '.pdf'),'Resolution',600)
     end
     close all
@@ -352,9 +352,9 @@ for z = 1:numel(cases)
     ims = cell(1,3);
     % Read compact per-replicate images
     for r = 1:3
-        fname = sprintf('combined_grid_%sRep%d_compact.png', cases{z}, r);
+        fname = sprintf('combined_grid_%sRep%d.png', cases{z}, r);
         if ~isfile(fname)
-            error('Expected file not found: %s. Make sure Step 1 exported compact images.', fname);
+            error('Expected file not found: %s. Make sure Step 1 exported images.', fname);
         end
         ims{r} = imread(fname);
     end
