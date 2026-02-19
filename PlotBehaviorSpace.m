@@ -87,7 +87,13 @@ for i = 2:numReporters
     
         % Plot each run with its style
         plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor);
-        
+
+        % diagnosing which D cases have 1 fibroblast remaining at 52 weeks
+        % if i ==5 && z ==3
+        %     if reporterValues(end, r) == 59
+        %         r
+        %     end
+        % end
         hold on;
     end
     hold off;
