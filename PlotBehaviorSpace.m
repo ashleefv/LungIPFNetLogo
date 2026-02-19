@@ -93,6 +93,10 @@ for i = 2:numReporters
     hold off;
 
     xlim([xmin xmax])
+    if i == 5
+        yticks([0:20:100])
+        set(gca,'XGrid','off','YGrid','on')
+    end
     xlabel('Time (weeks)');
     ylabel(ReporterLabels{i-1})
 
