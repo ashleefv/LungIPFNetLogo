@@ -70,7 +70,7 @@ figColors = [
     0.8 0.0 0.0;        % red
 ];
 
-ReporterLabels = {'total world collagen', '% pixel collagen', 'fibroblasts', 'myofibroblasts', 'max pixel collagen'};
+ReporterLabels = {'total collagen', '% collagen', 'fibroblasts', 'myofibroblasts', 'max collagen'};
 for i = 2:numReporters
     figure(1)
     subplot(length(ResultsPath),numReporters-1,(z-1)*(numReporters-1) + (i-1));
@@ -168,6 +168,7 @@ for rowIndex = 2
             end
             xlim([xmin xmax])
             xlabel('Time (weeks)')
+            ReporterLabels{3-1} = '% collagen';
             ylabel(ReporterLabels{i-1})
             %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
             hold off
@@ -207,6 +208,8 @@ for rowIndex = 2
 
             for m = 1:numTreatments              
                 indices = (m-1)*(numReps)+[1:numReps];
+                Delta_mean_reporterValues(:,m) = mean((reporterValues(:,indices)-reporterValues(1,indices)),2);
+                Delta_std_reporterValues(:,m) = std((reporterValues(:,indices)-reporterValues(1,indices)),0,2);
                 mean_reporterValues(:,m) = mean(reporterValues(:,indices),2);
                 std_reporterValues(:,m) = std(reporterValues(:,indices),0,2);
                 storeY(k,z,i,m,:) = reporterValues(end,indices);
@@ -235,8 +238,14 @@ for rowIndex = 2
             figure(2*(numReporters-1) + i)
             subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
             hold on
-            y = mean_reporterValues(end,:);
-            barError = std_reporterValues(end,:);
+            if i == 3
+                y = Delta_mean_reporterValues(end,:);
+                barError = Delta_std_reporterValues(end,:);
+            else
+                y = mean_reporterValues(end,:);
+                barError = std_reporterValues(end,:);
+            end
+              
             % storeY(k,z,i,:) = y;
             b = bar(y, 'FaceColor', 'flat');
             hold on
@@ -290,23 +299,25 @@ for rowIndex = 2
             if i == 2
                 yticks([0:2:10]*1e6)
             elseif i == 3
-                yticks([0 25:10:75])
+                %yticks([0 25:10:75])
+                yticks([0:3:15])
             else
                 yticks(0:2500:12500)
             end
+            ReporterLabels{3-1} = "\Delta % collagen";
             ylabel({ReporterLabels{i-1}; " at 52 weeks"})
             %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
 
             errorbar(x,y,barError,'k', 'linestyle', 'none')
             hold off
 
-            % %% Deltas
+            % % %% Deltas
             % figure(3*(numReporters-1) + i)
             % temp = rowData(matchingIndices);
             % ifc = temp(1);
             % subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
             % hold on
-            % y = (mean_reporterValues(end,:)-mean_reporterValues(1,:))/ifc;
+            % y = (mean_reporterValues(end,:)-mean_reporterValues(1,:));%/ifc/length(time);
             % %barError = std_reporterValues(end,:);
             % 
             % b = bar(y, 'FaceColor', 'flat');
@@ -361,7 +372,8 @@ for rowIndex = 2
             % if i == 2
             %     yticks([0:2:10]*1e6)
             % elseif i == 3
-            %     yticks([0 25:10:75])
+            %     %yticks([0 25:10:75])
+            %     yticks([0:3:15])
             % else
             %     yticks([0:2500:12500])
             % end
@@ -370,7 +382,7 @@ for rowIndex = 2
             % 
             % %errorbar(x,y,barError,'k', 'linestyle', 'none')
             % hold off
-            
+            % 
            
         end
     end
@@ -664,7 +676,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     % Sort them in the order they were created (subplot order)
     allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
     
-    if i == 2 | i == 3
+    if i == 2 
             % Get Y-limits from the 10th panel
             yLimitsPanel10 = ylim(allAxes(10));
 
@@ -673,7 +685,15 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
             ylim(allAxes(k), yLimitsPanel10);
         end
     end
-    if i == 6
+    if i == 3
+        yLimitsPanel =[0 15];
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel);
+        end
+    end
+    if i == 6 
         % Get Y-limits from the 3rd panel
         yLimitsPanel3 = ylim(allAxes(3));
 
