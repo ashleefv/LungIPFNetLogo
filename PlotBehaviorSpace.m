@@ -86,7 +86,7 @@ for i = 2:numReporters
         currentColor = figColors(colorIndex, :);
     
         % Plot each run with its style
-        plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor);
+        plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor, 'LineWidth', 0.5);
 
         % diagnosing which D cases have 1 fibroblast remaining at 52 weeks
         % if i ==5 && z ==3
@@ -149,13 +149,47 @@ for rowIndex = 2
                 % Determine which line style to use
                 styleIndex = mod(floor((r-1)/Replicates), length(lineStyles)) + 1;
                 currentStyle = lineStyles{styleIndex};
-                plot(time,reporterValues(:, r),'LineStyle', currentStyle,'Color', currentColor)
+                plot(time,reporterValues(:, r),'LineStyle', currentStyle,'Color', currentColor, 'LineWidth', 0.5)
+            end
+            if i == 2 % gray constant slopes
+                temp = rowData(matchingIndices);
+                ifc = temp(1);
+                grayColor = [.7 .7 .7];
+                X10(1) = reporterValues(1, 1);
+                X5(1) = reporterValues(1, Replicates*TreatmentGroups);
+                for tt = 2:length(time)
+                    X10(tt) = X10(tt-1)+10*ifc;
+                    X5(tt) = X5(tt-1)+5*ifc;
+                end
+                plot(time, X10,'Color',grayColor,'LineStyle','-', 'LineWidth', 0.5)
+                plot(time, X5,'Color',grayColor,'LineStyle','-', 'LineWidth', 0.5)
             end
             xlim([xmin xmax])
             xlabel('Time (weeks)')
             ylabel(ReporterLabels{i-1})
             %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
             hold off
+            % if i == 2
+            %     figure(5)
+            %     subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
+            %     hold on
+            %     % Determine color (change every k value)
+            %     colorIndex = k;
+            %     currentColor = figColors(colorIndex, :);
+            %     matchingIndices = find(ismember(rowData,uniqueValues(k) ) );
+            %     reporterValues = RunData{:,(matchingIndices-1)*numReporters+ReporterNumber};
+            %     for r = 1:Replicates*TreatmentGroups
+            %         % Determine which line style to use
+            %         styleIndex = mod(floor((r-1)/Replicates), length(lineStyles)) + 1;
+            %         currentStyle = lineStyles{styleIndex};
+            %         % plot(time(2:end),(reporterValues(2:end, r)-reporterValues(1:end-1, r))./(time(2:end)-time(1:end-1)),'LineStyle', currentStyle,'Color', currentColor, 'LineWidth', 0.5)
+            %         plot(time(2:end),(reporterValues(2:end, r)-reporterValues(1:end-1, r)),'LineStyle', currentStyle,'Color', currentColor, 'LineWidth', 0.5)
+            %     end
+            %     xlim([xmin xmax])
+            %     xlabel('Time (weeks)')
+            %     ylabel([ReporterLabels{i-1} ' slope'])                
+            % end
+            
 
             % figure((numReporters-1) + i)
             % subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
@@ -249,11 +283,89 @@ for rowIndex = 2
                 xticks(x);
                 xticklabels({});
             end
+            if i == 2
+                yticks([0:2:10]*1e6)
+            elseif i == 3
+                yticks([0 25:10:75])
+            else
+                yticks([0:2500:12500])
+            end
             ylabel({ReporterLabels{i-1}; " at 52 weeks"})
             %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
 
             errorbar(x,y,barError,'k', 'linestyle', 'none')
             hold off
+
+            % %% Deltas
+            % figure(3*(numReporters-1) + i)
+            % temp = rowData(matchingIndices);
+            % ifc = temp(1);
+            % subplot(length(ResultsPath),length(uniqueValues),(z-1)*length(uniqueValues) + k);
+            % hold on
+            % y = (mean_reporterValues(end,:)-mean_reporterValues(1,:))/ifc;
+            % %barError = std_reporterValues(end,:);
+            % 
+            % b = bar(y, 'FaceColor', 'flat');
+            % hold on
+            % x = b.XData;
+            % 
+            % numBars = numel(y);
+            % x = 1:numBars;
+            % 
+            % 
+            % % % Get the default color order
+            % % colors = get(gca, 'ColorOrder');
+            % % numColors = size(colors, 1);
+            % % 
+            % % % Set each bar to a different color from the color order
+            % % for s = 1:length(y)
+            % %     b.FaceColor = 'flat';         % Enable individual coloring
+            % %     b.CData(s,:) = colors(mod(s-1, numColors)+1, :);
+            % % end
+            % 
+            % % Base color for the treatment group (from your palette)
+            % % If each subset corresponds to one treatment family, pick its base color.
+            % % Example: use figColors(k,:) as base color for this subset k
+            % baseColor = figColors(k, :);    % adjust if you want a different mapping
+            % 
+            % % Desired intensity factors for bars (1, 0.75, 0.5, 0.25)
+            % intensity = [1.0, 0.75, 0.5, 0.25];
+            % 
+            % % Ensure we only use as many factors as bars present
+            % intensity = intensity(1:numBars);
+            % 
+            % % --- LIGHTER variant (towards white): c_out = 1 - (1 - c_in)*pct ---
+            % scaledColors = zeros(numBars, 3);
+            % for s = 1:numBars
+            %     pct = intensity(s);
+            %     scaledColors(s, :) = 1 - (1 - baseColor) * pct;
+            % end
+            % 
+            % % Assign per-bar colors
+            % b.CData = scaledColors;
+            % 
+            % 
+            % if z == 3
+            %     % Set custom x-axis labels
+            %     xticks(x);
+            %     xticklabels(treatmentLabel);
+            %     xtickangle(90);  % Optional: rotate labels for readability
+            % else
+            %     xticks(x);
+            %     xticklabels({});
+            % end
+            % if i == 2
+            %     yticks([0:2:10]*1e6)
+            % elseif i == 3
+            %     yticks([0 25:10:75])
+            % else
+            %     yticks([0:2500:12500])
+            % end
+            % ylabel({"% \Delta"; ReporterLabels{i-1}; " at 52 weeks"})
+            % %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
+            % 
+            % %errorbar(x,y,barError,'k', 'linestyle', 'none')
+            % hold off
         end
     end
 end
@@ -290,14 +402,14 @@ hold(axLegend, 'on');
 colorLabels = {'ifc = 20', 'ifc = 40', 'ifc = 60', 'ifc = 80', 'ifc = 100'};
 colorHandles = gobjects(length(figColors),1);
 for c = 1:length(figColors)
-    colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 2);
+    colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 0.5);
 end
 
 % --- Line Style Legend ---
 styleLabels = {"none","pirf","pentox","pentox & pirf"};
 styleHandles = gobjects(length(lineStyles),1);
 for s = 1:length(lineStyles)
-    styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 2);
+    styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
 end
 
 % Combine handles: colors first, then styles
@@ -353,7 +465,7 @@ set(fig, 'PaperPositionMode', 'manual');
 fig = gcf;
 
 %figname = 'test';
-exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+exportgraphics(fig,strcat(figname, '.png'),'Resolution',600, 'ContentType', 'vector')
 
 for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers of fibroblasts or myofibroblasts
     figure(1+(i-1))
@@ -397,14 +509,14 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     colorLabels = {'ifc = 20', 'ifc = 40', 'ifc = 60', 'ifc = 80', 'ifc = 100'};
     colorHandles = gobjects(length(figColors),1);
     for c = 1:length(figColors)
-        colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 2);
+        colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 0.5);
     end
     
     % --- Line Style Legend ---
     styleLabels = {"none","pirf","pentox","pentox & pirf"};
     styleHandles = gobjects(length(lineStyles),1);
     for s = 1:length(lineStyles)
-        styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 2);
+        styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
     end
     
     % Combine handles: colors first, then styles
@@ -468,7 +580,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     fig = gcf;
     
     %figname = 'test';
-    exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+    exportgraphics(fig,strcat(figname, '.png'),'Resolution',600, 'ContentType', 'vector')
 
     figure(2*(numReporters-1) + i)
 
@@ -486,8 +598,8 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
     
     if i == 2 | i == 3
-        % Get Y-limits from the 10th panel
-        yLimitsPanel10 = ylim(allAxes(10));
+            % Get Y-limits from the 10th panel
+            yLimitsPanel10 = ylim(allAxes(10));
 
         % Apply same limits to all panels
         for k = 1:length(allAxes)
@@ -512,7 +624,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     colorLabels = {'ifc = 20', 'ifc = 40', 'ifc = 60', 'ifc = 80', 'ifc = 100'};
     colorHandles = gobjects(length(figColors),1);
     for c = 1:length(figColors)
-        colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 2);
+        colorHandles(c) = plot(axLegend, nan, nan, '-', 'Color', figColors(c,:), 'LineWidth', 0.5);
     end
     
   
@@ -576,7 +688,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     fig = gcf;
     
     %figname = 'test';
-    exportgraphics(fig,strcat(figname, '.png'),'Resolution',600)
+    exportgraphics(fig,strcat(figname, '.png'),'Resolution',600, 'ContentType', 'vector')
 
 
 end
