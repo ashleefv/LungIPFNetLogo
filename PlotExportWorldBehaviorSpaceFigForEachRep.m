@@ -12,7 +12,7 @@ selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
 selectedmatrix = [60+49, 49:3:60; 60+50, 50:3:60; 60+51, 51:3:60];
 cols = 5; rows = 3; reps = 3;
 replicateLabels = {"Rep1","Rep2","Rep3"};
-rowLabels = {"NetLogo World","Patch collagen value","Patch TGF\beta value"};
+rowLabels = {"NetLogo world","Patch collagen value","Patch TGF\beta value"};
 treatmentLabels = {"Initial time","52 weeks: none","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox & pirf"};
 
 % Fixed colorbar settings
