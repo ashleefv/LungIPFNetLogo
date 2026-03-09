@@ -18,13 +18,13 @@ globals
   Gaussian-radius
   percent-pixel-collagen
   max-patch-collagen
-  uptakePercent
-  trailPercent
+  uptakeFraction
+  trailFraction
   secrete-spill-collagenFraction
   partialTurnAngleDegrees
   fibroblastSpeed
   myofibroblastSpeed
-  pirf-trailPercent
+  pirf-trailFraction
   successfullSpillToAlveoli
   have-dosed-pentox
   have-dosed-pirf
@@ -190,8 +190,8 @@ to setup
   set fibro_collagen 1
   set myo-to-fibro-collagen-ratio 1.25
   set myo_collagen myo-to-fibro-collagen-ratio * fibro_collagen
-  set uptakePercent 0.1
-  set trailPercent 0.1
+  set uptakeFraction 0.1
+  set trailFraction 0.1
   set secrete-spill-collagenFraction 0.1
   set partialTurnAngleDegrees 30
   set successfullSpillToAlveoli 0.001
@@ -211,7 +211,7 @@ to setup
   ;ask patches [set MMP-concentration 0]
   set pentox-myo_collagen 0.5 ; multiplier to myo_collagen for the effect of pentox
   set pentox-TGFbetaDiffThresh 1.5 ; multiplier to TGFbetaDiffThresh for the effect of pentox
-  set pirf-trailPercent 0.1 ; multiplier to trailPercent for the effect of pirf
+  set pirf-trailFraction 0.1 ; multiplier to trailFraction for the effect of pirf
   set have-dosed-pirf 0
   set have-dosed-pentox 0
   set max-tries-for-chemotax 10
@@ -321,9 +321,9 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
   ;pen-down
   set prev-patch patch-here
   let randDirection random-float 360
-  let uptake uptakePercent * patch_TGFbeta
-  set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
-  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+  let uptake uptakeFraction * patch_TGFbeta
+  set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakeFraction of the patch's TFGbeta (uptake)
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakeFraction less TFGbeta because of uptake
   let destination patch (xcor + fibroblastSpeed * cos randDirection ) (ycor + fibroblastSpeed * sin randDirection )
   set tries-for-migrate 1
   ;; if the destination is on an alveoli, try again to migrate elsewhere
@@ -341,7 +341,7 @@ to migrate-single-fibroblast-on-non-alveoli ;updated with TGF-beta trail and upt
     move-to patch-here  ;; go to patch center
   ]
   [ ; only update these for successful moves
-    let trail trailPercent * patch_TGFbeta
+    let trail trailFraction * patch_TGFbeta
     set patch_TGFbeta patch_TGFbeta + trail
   ]
   ;pen-up
@@ -351,9 +351,9 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
   ;pen-down
   set prev-patch patch-here
   let randDirection random-float 360
-  let uptake uptakePercent * patch_TGFbeta
-  set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake) ;
-  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+  let uptake uptakeFraction * patch_TGFbeta
+  set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakeFraction of the patch's TFGbeta (uptake) ;
+  set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakeFraction less TFGbeta because of uptake
   let destination patch (xcor + myofibroblastSpeed * cos randDirection ) (ycor + myofibroblastSpeed * sin randDirection )
   set tries-for-migrate 1
   while [ [patch_alveoli] of destination = 1 and tries-for-migrate <= max-tries-for-migrate ]
@@ -370,7 +370,7 @@ to migrate-single-myofibroblast-on-non-alveoli ;updated with TGF-beta trail and 
     move-to patch-here  ;; go to patch center
   ]
   [ ; only update these for successful moves
-    let trail trailPercent * patch_TGFbeta
+    let trail trailFraction * patch_TGFbeta
     set patch_TGFbeta patch_TGFbeta + trail
   ]
   ;pen-up
@@ -422,7 +422,7 @@ end
 
 ; Addition of drug Pirfenidone
 to dose-pirf
-  set trailPercent pirf-trailPercent * trailPercent
+  set trailFraction pirf-trailFraction * trailFraction
   set have-dosed-pirf 1
 end
 
@@ -440,9 +440,9 @@ to chemotax-fibroblasts
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
         set prev-patch patch-here
-        let uptake uptakePercent * patch_TGFbeta
-        set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
-        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+        let uptake uptakeFraction * patch_TGFbeta
+        set TGFbeta_fb TGFbeta_fb + uptake ;setting turtle variable to uptakeFraction of the patch's TFGbeta (uptake)
+        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakeFraction less TFGbeta because of uptake
         move-to patch-here  ;; go to patch center
         let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
         if [patch_TGFbeta] of p > patch_TGFbeta
@@ -472,7 +472,7 @@ to chemotax-fibroblasts
         ]
         [ ; only update these for successful moves
           ; update TGFbeta due to uptake and trail (chemotaxis case only)
-          let trail trailPercent * patch_TGFbeta
+          let trail trailFraction * patch_TGFbeta
           set patch_TGFbeta patch_TGFbeta + trail
         ]
       ]
@@ -495,9 +495,9 @@ to chemotax-myofibroblasts
       ifelse (lowTGFbetaThresh <= patch_TGFbeta) and (patch_TGFbeta < highTGFbetaThresh) ; chemotaxis zone + wiggle
       [
         set prev-patch patch-here
-        let uptake uptakePercent * patch_TGFbeta
-        set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakePercent of the patch's TFGbeta (uptake)
-        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakePercent less TFGbeta because of uptake
+        let uptake uptakeFraction * patch_TGFbeta
+        set TGFbeta_myo TGFbeta_myo + uptake ;setting turtle variable to uptakeFraction of the patch's TFGbeta (uptake)
+        set patch_TGFbeta (patch_TGFbeta - uptake) ;setting patch variable to have uptakeFraction less TFGbeta because of uptake
         move-to patch-here  ;; go to patch center
         let p max-one-of neighbors [patch_TGFbeta]  ;; or neighbors4
         if [patch_TGFbeta] of p > patch_TGFbeta
@@ -526,7 +526,7 @@ to chemotax-myofibroblasts
           move-to patch-here  ;; go to patch center
         ]
         ; update TGFbeta due to uptake and trail (chemotaxis case only)
-        let trail trailPercent * patch_TGFbeta
+        let trail trailFraction * patch_TGFbeta
         set patch_TGFbeta patch_TGFbeta + trail
       ]
       [
