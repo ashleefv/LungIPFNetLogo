@@ -45,7 +45,7 @@ globals
   clock
   initial-number-of-macrophages
   ;===== Diffusion-related and units stuff
-  dt ; (units sec)
+  dt ; (units hours)
   h ; (dx = dy = h units microns)
   TGFbeta-diffusion-coefficient ; c^2 in the heat equation (units microns^2/s?)
   TGFbeta-sigma ;
