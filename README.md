@@ -1,7 +1,7 @@
 # LungIPFNetLogo
 
 ## Code developed by Team #5 at [ICERM Women in Mathematical Computational Biology](https://icerm.brown.edu/program/topical_workshop/tw-25-wmcb) 
-### Authors: Narshini D. Gunputh*, Claudia A. Miranda*, Eirini Kilikian*, Shayn M. Peirce, and Ashlee N. Ford Versypt. The first three authors contributed equally. Corresponding author: [A. N. Ford Versypt, ashleefv@buffalo.edu](mailto:ashleefv@buffalo.edu).
+### Authors: Narshini D. Gunputh*, Eirini Kilikian*, Claudia A. Miranda*,  Shayn M. Peirce, and Ashlee N. Ford Versypt. The first three authors contributed equally. Corresponding author: [A. N. Ford Versypt, ashleefv@buffalo.edu](mailto:ashleefv@buffalo.edu).
 
 ## Abstract: Project #5 - Agent-based modeling of lung fibrotic disease for testing and identifying new drug targets
 ### Leaders: Shayn M. Peirce (University of Virginia), Ashlee N. Ford Versypt (University at Buffalo)
