@@ -1,5 +1,0 @@
-run("Set Scale...", "distance=1.5 known=1 unit=unit");
-run("Specify...", "width=1000 height=1000 x=3500 y=3500 scaled");
-run("Crop");
-setOption("BlackBackground", false);
-run("Convert to Mask");
