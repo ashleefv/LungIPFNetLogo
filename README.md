@@ -1,4 +1,4 @@
-# LungIPFNetLogo
+# LungIPF NetLogo
 
 ## Code developed by Team #5 at [ICERM Women in Mathematical Computational Biology](https://icerm.brown.edu/program/topical_workshop/tw-25-wmcb) 
 ### Authors: Narshini D. Gunputh*, Eirini Kilikian*, Claudia A. Miranda*,  Shayn M. Peirce, and Ashlee N. Ford Versypt. The first three authors contributed equally. Corresponding author: [A. N. Ford Versypt, ashleefv@buffalo.edu](mailto:ashleefv@buffalo.edu).
