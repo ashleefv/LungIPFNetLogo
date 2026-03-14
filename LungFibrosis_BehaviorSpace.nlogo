@@ -652,7 +652,7 @@ to sum-collagen
   calculate-percent-collagen
 end
 
-to calculate-percent-collagen ; EIRINI: I want to add a calculation of the maximum collagen as well for BS
+to calculate-percent-collagen 
   let sum-patch-alveoli sum [patch_alveoli] of patches
   let domain-size world-width * world-height
   let fraction-alveoli sum-patch-alveoli / domain-size
