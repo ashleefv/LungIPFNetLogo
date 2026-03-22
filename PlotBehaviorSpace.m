@@ -128,7 +128,7 @@ for rowIndex = 2:numRunParams+1
         numReps = length(uniqueValues);
     end
 end
-treatmentLabel = {"none", "pirf", "pentox", "     pentox & pirf"};
+treatmentLabel = {"control", "pirf", "pentox", "     pentox & pirf"};
 for rowIndex = 2    
     % Extract the row as a cell array
     rowData = table2array(RunParams(rowIndex, 2:end));
@@ -485,7 +485,7 @@ for c = 1:length(figColors)
 end
 
 % --- Line Style Legend ---
-styleLabels = {"none","pirf","pentox","pentox & pirf"};
+styleLabels = {"control","pirf","pentox","pentox & pirf"};
 styleHandles = gobjects(length(lineStyles),1);
 for s = 1:length(lineStyles)
     styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
@@ -592,7 +592,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     end
     
     % --- Line Style Legend ---
-    styleLabels = {"none","pirf","pentox","pentox & pirf"};
+    styleLabels = {"control","pirf","pentox","pentox & pirf"};
     styleHandles = gobjects(length(lineStyles),1);
     for s = 1:length(lineStyles)
         styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
