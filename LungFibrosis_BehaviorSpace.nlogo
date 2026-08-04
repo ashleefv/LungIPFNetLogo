@@ -652,7 +652,7 @@ to sum-collagen
   calculate-percent-collagen
 end
 
-to calculate-percent-collagen 
+to calculate-percent-collagen
   let sum-patch-alveoli sum [patch_alveoli] of patches
   let domain-size world-width * world-height
   let fraction-alveoli sum-patch-alveoli / domain-size
@@ -1106,7 +1106,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-5
+4
 
 SLIDER
 601
@@ -1552,7 +1552,7 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="A1_testRuns" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="A1_10Runs" repetitions="1" runMetricsEveryStep="true">
     <setup>setup
 export-world-and-image-before</setup>
     <go>go</go>
@@ -1571,11 +1571,7 @@ export-world-and-image-before</setup>
       <value value="0"/>
       <value value="1"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="ss">
-      <value value="1"/>
-      <value value="11"/>
-      <value value="111"/>
-    </enumeratedValueSet>
+    <steppedValueSet variable="ss" first="1" step="1" last="10"/>
   </experiment>
 </experiments>
 @#$#@#$#@
