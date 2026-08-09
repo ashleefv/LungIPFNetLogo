@@ -103,6 +103,10 @@ end
 to setup
   ;===== Import world from .csv and set patch variables
   set percent-pixel-collagen 0
+  let ifc-temp ifc
+  let pirf-temp s-pirf
+  let pentox-temp s-pentox
+  let ss-temp ss
   ;===== Import "Healthy Lung case from ICERM"
   import-world starting_world_file ;"HistologyHealthyLung.csv" ; starting_world_file is from a chooser
   ;===== Import HealthyControls human patient samples
@@ -176,6 +180,10 @@ to setup
   ;===== Set parameters
   set initial-number-of-sources 100
   ;  FOR BEHAVIOR SPACE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ OCT 2025
+  set ifc ifc-temp
+  set s-pentox pentox-temp
+  set s-pirf pirf-temp
+  set ss ss-temp
   set initial-fibroblast-cells ifc
   set strategy-pentox s-pentox
   set strategy-pirf s-pirf
@@ -1106,22 +1114,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-4
-
-SLIDER
-601
-20
-773
-53
-ifc
-ifc
-0
-100
-20.0
-10
-1
-NIL
-HORIZONTAL
+22
 
 SLIDER
 602
@@ -1178,6 +1171,21 @@ max-patch-collagen
 3
 1
 11
+
+SLIDER
+601
+20
+773
+53
+ifc
+ifc
+0
+100
+20.0
+10
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -1552,7 +1560,7 @@ NetLogo 6.4.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="A1_10Runs" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="D1_10Runs" repetitions="1" runMetricsEveryStep="true">
     <setup>setup
 export-world-and-image-before</setup>
     <go>go</go>
