@@ -1,10 +1,10 @@
 ;----- Defining breeds and variables -----
 globals
 [
-  number-of-fibroblasts
-  number-of-myofibroblasts
-  total_world_collagen ; summing collagen
-  initial_total_world_collagen
+  number_fibroblasts
+  number_myofibroblasts
+  total_collagen ; summing collagen
+  initial_total_collagen
   myo_collagen
   fibro_collagen
   initial-number-of-sources
@@ -16,8 +16,8 @@ globals
   highTGFbetaThresh
   Gaussian-stdev
   Gaussian-radius
-  percent-pixel-collagen
-  max-patch-collagen
+  percent_collagen
+  max_collagen
   uptakeFraction
   trailFraction
   secrete-spill-collagenFraction
@@ -33,7 +33,7 @@ globals
   max-tries-for-chemotax
   max-tries-for-migrate
   ;===== The following globals can become sliders for behavior space
-  ;percent-pixel-collagen-thresh
+  ;percent_collagen-thresh
   initial-fibroblast-cells
   myo-to-fibro-collagen-ratio
   strategy-pentox
@@ -66,7 +66,7 @@ breed [ TGFbeta-sources TGFbeta-source ] ; conceptually this can be from macroph
 
 patches-own
 [
-  total_patch_collagen
+  patch_collagen
   immediate_patch_collagen
   old_collagen
   new_myo_collagen
@@ -102,7 +102,7 @@ end
 
 to setup
   ;===== Import world from .csv and set patch variables
-  set percent-pixel-collagen 0
+  set percent_collagen 0
   let ifc-temp ifc
   let pirf-temp s-pirf
   let pentox-temp s-pentox
@@ -164,20 +164,20 @@ to setup
   ;import-world "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv"
   ; IPF_4.B3.1
   ;import-world "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set total_patch_collagen 1] [set patch_alveoli 1 set total_patch_collagen 0]  ]
+  ask patches [ifelse  pcolor = 117 [set patch_alveoli 0 set patch_collagen 1] [set patch_alveoli 1 set patch_collagen 0]  ]
   sum-collagen
   ;===== Random seed
   ;set starting-seed new-seed
   ;random-seed ss ;added this line to ensure randomly distributed fibroblasts at the beginning
   ;===== Comment if using sliders
-  ;set percent-pixel-collagen-thresh 75
+  ;set percent_collagen-thresh 75
   ;set strategy-pentox 0
   ;set strategy-pirf 0
   ;_____
   ;; strategy 0, no drug is applied
   ;; strategy 1, drug is applied at t = 0
-  ;; strategy 2, drug is applied when percent-pixel-collagen >= 55
-  ;; strategy 3, drug is appled when percent-pixel-collagen >= 65
+  ;; strategy 2, drug is applied when percent_collagen >= 55
+  ;; strategy 3, drug is appled when percent_collagen >= 65
   ;===== Set parameters
   set initial-number-of-sources 100
   ;  FOR BEHAVIOR SPACE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ OCT 2025
@@ -192,7 +192,7 @@ to setup
   random-seed ss
   ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ;set initial-number-of-macrophages 20
-  set initial_total_world_collagen total_world_collagen
+  set initial_total_collagen total_collagen
   set TGFbetaDiffThresh 100
   set initialSourceTGFbeta 5000
   set lowTGFbetaThresh 0.05 * initialSourceTGFbeta
@@ -239,7 +239,7 @@ to setup
   ;===== Initialize
   place-fibroblasts
   deposit-TGFbeta-on-sources
-  set max-patch-collagen max[total_patch_collagen] of patches
+  set max_collagen max[patch_collagen] of patches
   reset-ticks
 end
 
@@ -248,7 +248,7 @@ end
 to go
 
   ifelse ticks < time_stop * 7 * 24 ; convert to hours
-  ;ifelse percent-pixel-collagen < percent-pixel-collagen-thresh
+  ;ifelse percent_collagen < percent_collagen-thresh
   [
     ;diffuse-TGFbeta
     ;manage-MMP-dynamics
@@ -256,18 +256,18 @@ to go
     chemotax-myofibroblasts
     differentiate-TGFbetaThresh
     ;ask patches [ifelse patch_alveoli = 1 [set patch_TGFbeta 0] [if (patch_TGFbeta > 0) and (pcolor != 115) [set pcolor palette:scale-gradient [117 15] patch_TGFbeta 0 50]]]
-    if number-of-myofibroblasts >= secrete-spill-collagenFraction * ifc [ secrete-spill-collagen]
+    if number_myofibroblasts >= secrete-spill-collagenFraction * ifc [ secrete-spill-collagen]
     ;===============  APPLY DRUG STRATEGIES =============
     if (have-dosed-pentox = 0) and (strategy-pentox != 0)
     [
      (ifelse
-        (strategy-pentox = 1 and percent-pixel-collagen >= 0) [
+        (strategy-pentox = 1 and percent_collagen >= 0) [
           dose-pentox
     ]
-    (strategy-pentox = 2 and percent-pixel-collagen >= 55) [
+    (strategy-pentox = 2 and percent_collagen >= 55) [
           dose-pentox
     ]
-    (strategy-pentox = 3 and percent-pixel-collagen >= 65) [
+    (strategy-pentox = 3 and percent_collagen >= 65) [
           dose-pentox
     ]
     )
@@ -276,19 +276,19 @@ to go
     if (have-dosed-pirf = 0) and (strategy-pirf != 0)
     [
      (ifelse
-        (strategy-pirf = 1 and percent-pixel-collagen >= 0) [
+        (strategy-pirf = 1 and percent_collagen >= 0) [
           dose-pirf
     ]
-    (strategy-pirf = 2 and percent-pixel-collagen >= 55) [
+    (strategy-pirf = 2 and percent_collagen >= 55) [
           dose-pirf
     ]
-    (strategy-pirf = 3 and percent-pixel-collagen >= 65) [
+    (strategy-pirf = 3 and percent_collagen >= 65) [
           dose-pirf
     ]
     )
     ]
     ;====================================================
-    set max-patch-collagen max[total_patch_collagen] of patches
+    set max_collagen max[patch_collagen] of patches
     tick
     export-image
   ]
@@ -311,7 +311,7 @@ to place-fibroblasts
     set size 5
     move-to one-of patches with [patch_alveoli = 0]
   ]
-   set number-of-fibroblasts count fibroblasts
+   set number_fibroblasts count fibroblasts
 end
 
 ;Migrate fibroblasts randomly around the world
@@ -392,36 +392,36 @@ end
 
 to proliferate-fibroblasts
   ask fibroblasts [hatch 1 [migrate-single-fibroblast-on-non-alveoli]]
-  set number-of-fibroblasts count fibroblasts
+  set number_fibroblasts count fibroblasts
 end
 
 ;;Proliferate myofibroblasts
 
 ;to proliferate-myofibroblasts
 ;  ask myofibroblasts [hatch 1 [migrate-single-myofibroblast-on-non-alveoli]]
-;  set number-of-myofibroblasts count myofibroblasts
+;  set number_myofibroblasts count myofibroblasts
 ;end
 
 ;; Kill fibroblasts that are overcrowded
 
 to apoptose-crowded-fibroblasts
   ask fibroblasts [if sum [count fibroblasts-here] of neighbors > 6 [die]]
-  set number-of-fibroblasts count fibroblasts
+  set number_fibroblasts count fibroblasts
 end
 
 ;; Kill myofibroblasts that are overcrowded
 
 ;to apoptose-crowded-myofibroblasts
 ;  ask myofibroblasts [if sum [count myofibroblasts-here] of neighbors > 6 [die]]
-;  set number-of-myofibroblasts count myofibroblasts
+;  set number_myofibroblasts count myofibroblasts
 ;end
 
 ; Differentiate fibroblasts if they are in a patch of TGFbeta > TGFbetaDiffThresh
 
 to differentiate-TGFbetaThresh
   ask fibroblasts [if patch_TGFbeta > TGFbetaDiffThresh [set breed myofibroblasts set shape "myofibroblast" set color 77 set size 5]]
-  set number-of-fibroblasts count fibroblasts
-  set number-of-myofibroblasts count myofibroblasts
+  set number_fibroblasts count fibroblasts
+  set number_myofibroblasts count myofibroblasts
 end
 
 ; Addition of drug pentoxifylline
@@ -653,13 +653,13 @@ to secrete-spill-collagen
 end
 
 to accumulate-collagen
-  set old_collagen total_patch_collagen
-  set total_patch_collagen old_collagen + myo_multiplier * myo_collagen + fibro_multiplier * fibro_collagen
+  set old_collagen patch_collagen
+  set patch_collagen old_collagen + myo_multiplier * myo_collagen + fibro_multiplier * fibro_collagen
 end
 
 
 to sum-collagen
-  set total_world_collagen sum [total_patch_collagen] of patches
+  set total_collagen sum [patch_collagen] of patches
   calculate-percent-collagen
 end
 
@@ -667,7 +667,7 @@ to calculate-percent-collagen
   let sum-patch-alveoli sum [patch_alveoli] of patches
   let domain-size world-width * world-height
   let fraction-alveoli sum-patch-alveoli / domain-size
-  set percent-pixel-collagen 100 - 100 * fraction-alveoli
+  set percent_collagen 100 - 100 * fraction-alveoli
 end
 
 ;=== DIKSHA: This is the implementation of the MMPS that degrade the collagen
@@ -704,7 +704,7 @@ end
 ;    ;; Collagen degradation limited to areas with MMP activity
 ;    if patch_alveoli = 1 [
 ;      let degradation MMP-concentration * MMP-degradation-rate
-;      set total_patch_collagen max (list 0 (total_patch_collagen - degradation))
+;      set patch_collagen max (list 0 (patch_collagen - degradation))
 ;    ]
 ;  ]
 ;  sum-collagen  ; Update global collagen tracking
@@ -795,7 +795,7 @@ MONITOR
 1122
 138
 No. of fibroblasts
-number-of-fibroblasts
+number_fibroblasts
 17
 1
 11
@@ -884,7 +884,7 @@ MONITOR
 1252
 138
 No. of myofibroblasts
-number-of-myofibroblasts
+number_myofibroblasts
 17
 1
 11
@@ -976,7 +976,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plotxy ticks total_world_collagen"
+"default" 1.0 0 -16777216 true "" "plotxy ticks total_collagen"
 
 TEXTBOX
 39
@@ -1004,7 +1004,7 @@ MONITOR
 791
 256
 NIL
-total_world_collagen
+total_collagen
 17
 1
 11
@@ -1015,7 +1015,7 @@ MONITOR
 827
 201
 NIL
-percent-pixel-collagen
+percent_collagen
 17
 1
 11
@@ -1122,7 +1122,7 @@ CHOOSER
 starting_world_file
 starting_world_file
 "HistologyHealthyLung.csv" "CropMaskHE/HealthyControls/V19S23-092-A1.csv" "CropMaskHE/HealthyControls/V10T03-282-A1.csv" "CropMaskHE/HealthyControls/V10T31-015-A1.csv" "CropMaskHE/HealthyControls/V10T31-019-A1.csv" "CropMaskHE/HealthyControls/V10T03-280-A1.csv" "CropMaskHE/HealthyControls/V10T03-281-A1.csv" "CropMaskHE/IPFprogressionB1/V19S23-092-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-279-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-015-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-280-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-281-B1.csv" "CropMaskHE/IPFprogressionB1/V10T31-051-B1.csv" "CropMaskHE/IPFprogressionB1/V10T03-282-B1.csv" "CropMaskHE/IPFprogressionB2/V19S23-092-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-279-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-015-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-280-C1.csv" "CropMaskHE/IPFprogressionB2/V10T03-281-C1.csv" "CropMaskHE/IPFprogressionB2/V10T31-051-C1.csv" "CropMaskHE/IPFprogressionB3/V19S23-092-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-279-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-015-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-280-D1.csv" "CropMaskHE/IPFprogressionB3/V10T03-281-D1.csv" "CropMaskHE/IPFprogressionB3/V10T31-051-D1.csv"
-4
+22
 
 SLIDER
 602
@@ -1175,7 +1175,7 @@ MONITOR
 1356
 138
 Max collagen
-max-patch-collagen
+max_collagen
 3
 1
 11
@@ -1573,11 +1573,11 @@ NetLogo 6.4.0
 export-world-and-image-before</setup>
     <go>go</go>
     <postRun>export-world-and-image-after</postRun>
-    <metric>total_world_collagen</metric>
-    <metric>percent-pixel-collagen</metric>
-    <metric>number-of-fibroblasts</metric>
-    <metric>number-of-myofibroblasts</metric>
-    <metric>max-patch-collagen</metric>
+    <metric>total_collagen</metric>
+    <metric>percent_collagen</metric>
+    <metric>number_fibroblasts</metric>
+    <metric>number_myofibroblasts</metric>
+    <metric>max_collagen</metric>
     <enumeratedValueSet variable="ifc">
       <value value="100"/>
     </enumeratedValueSet>
