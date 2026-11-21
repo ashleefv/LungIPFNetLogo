@@ -2,18 +2,37 @@
 clear all; close all; warning('off','all');
 addpath(genpath('natsortfiles'));
 
-folder{1} = 'BehaviorSpaceResults\Results-V10T03-280-A1-101525';
-folder{2} = 'BehaviorSpaceResults\Results-V19S23-092-C1-101525';
-folder{3} = 'BehaviorSpaceResults\Results-V10T03-279-D1-101525';
+% folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080326';
+% folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080326';
+% folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080326';
+folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080826-10Reps';
+folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080826-10Reps';
+folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080826-10Reps';
 cases = {'A','C','D'};
 %ifc = 100 and the sets correspond to the behavior space run numbers with
-%the first 60 being "worldAfter" files and the second 60 being "worldBefore" files saved as .png and .csv 
-selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
-selectedmatrix = [60+49, 49:3:60; 60+50, 50:3:60; 60+51, 51:3:60];
-cols = 5; rows = 3; reps = 3;
+%the first numberSimsInSet being "worldAfter" files and the second numberSimsInSet being "worldBefore" files saved as .png and .csv 
+
+numberifcValues = 5;
+numberTreatmentValues = 4;
+replicates = 10;
+numberSimsInSet = numberifcValues*numberTreatmentValues*replicates;
+ifcCase = 5; % options 1, 2, 3, 3, 5 for ifc = 20, 40, 60, 80, 100
+zeroIndexForifcCase = (ifcCase-1)*numberTreatmentValues*replicates;
+finalIndexForifcCase = ifcCase*numberTreatmentValues*replicates;
+cols = 5; rows = 3; repsPerCase = 3;
+selectedset = [];
+selectedmatrix = [];
+for i = 1:rows
+    selectedset = [selectedset, numberSimsInSet+zeroIndexForifcCase+i, zeroIndexForifcCase+i:replicates:finalIndexForifcCase];
+    % selectedset = [numberSimsInSet+49, 49:replicates:numberSimsInSet, numberSimsInSet+50, 50:replicates:numberSimsInSet, numberSimsInSet+51, 51:replicates:numberSimsInSet];
+    selectedmatrix = [selectedmatrix; numberSimsInSet+zeroIndexForifcCase+i, zeroIndexForifcCase+i:replicates:finalIndexForifcCase];
+end
+%selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
+% selectedmatrix = [60+49, 49:3:60; 60+50, 50:3:60; 60+51, 51:3:60];
+
 replicateLabels = {"Rep1","Rep2","Rep3"};
 rowLabels = {"NetLogo world","Patch collagen value","Patch TGF\beta value"};
-treatmentLabels = {"Initial time","52 weeks: control","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox & pirf"};
+treatmentLabels = {"Initial time","52 weeks: untreated","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox & pirf"};
 
 % Fixed colorbar settings
 collagenEdges = [1 500 1000 2500 5000 7500 10000]; % 12000
@@ -26,10 +45,9 @@ collagenColors = [
     0.8 0.0 0.0;        % red
 ];
 
-tgfEdges = [0 0.01 0.05 0.10 0.5 0.75 1 2];
+tgfEdges = [0 0.05 0.10 0.5 0.75 1 2];
 tgfColors = [
     0.8 0.9 1.0;  % light blue
-    0.6 0.8 1.0;
     0.4 0.6 0.9;
     0.2 0.4 0.8;  % dark blue
     1.0 0.8 0.0;  % gold
@@ -202,8 +220,8 @@ for z = 1:3
         close all
     end
 
-    cols = 5; rows = 3; reps = 3;
-    for r = 1:reps
+    cols = 5; rows = 3; repsPerCase = 3;
+    for r = 1:repsPerCase
         figure(r)
         fig = gcf;
         set(fig,'Units','normalized','Position',[0 0 1 1]);

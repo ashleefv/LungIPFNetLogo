@@ -3,17 +3,21 @@ close all
 warning('off','all');
 
 %% All the patients tested
-ResultsPath = {"BehaviorSpaceResults\Results-V10T03-280-A1-101525","BehaviorSpaceResults\Results-V19S23-092-C1-101525","BehaviorSpaceResults\Results-V10T03-279-D1-101525"};
+%ResultsPath = {"BehaviorSpaceResults\Results-V10T31-019-A1-080326","BehaviorSpaceResults\Results-V10T31-015-C1-080326","BehaviorSpaceResults\Results-V10T31-015-D1-080326"};
+ResultsPath = {"BehaviorSpaceResults\Results-V10T31-019-A1-080826-10Reps","BehaviorSpaceResults\Results-V10T31-015-C1-080826-10Reps","BehaviorSpaceResults\Results-V10T31-015-D1-080826-10Reps"};
 ResultsString = {"A","C","D"};
 numPatches = 101^2;
-storeY = zeros(5,3,6,4,3); %k ifc index, z case index, i reporter index,  m treatment number,: rep
+%Replicates = 3;
+Replicates = 10;
+numberRuns = Replicates*20;
+numReporters = 6;
+numRunParams = 4;
+storeY = zeros(5,length(ResultsPath),numReporters,numRunParams,Replicates); %k ifc index, z case index, i reporter index,  m treatment number,: rep
 for z = 1:length(ResultsPath)
 %% read in data for one patient starting world
 csv_filename =  string(ResultsPath(z))+'\spreadsheet.csv';
 name = readtable(csv_filename,Range = "A3:A4")
-numberRuns = 60;
-numReporters = 6;
-numRunParams = 4;
+
 startCol = "A";
 startColIndex = 1;
 
@@ -40,6 +44,7 @@ end
 %disp(['Final column letter: ', finalColLetter])
 
 RunParams = readtable(csv_filename, Range = startCol + startRow + ":" + finalColLetter + finalRow, MissingRule = "omitvar");
+size(RunParams);
 
 startRow = num2str(str2num(finalRow)+1); 
 finalRow = num2str(str2num(startRow) + 5);
@@ -59,7 +64,7 @@ xmax = max(max(time));
 
 % Define line styles in the desired sequence
 lineStyles = {'-', '--', '-.', ':'};
-Replicates = 3;
+
 TreatmentGroups = 4;
 colorCycling = Replicates*TreatmentGroups;
 figColors = [
@@ -86,6 +91,7 @@ for i = 2:numReporters
         % Determine color (change every 12 runs)
         colorIndex = floor((r-1)/colorCycling) + 1;
         currentColor = figColors(colorIndex, :);
+        size(reporterValues);
     
         % Plot each run with its style
         plot(time, reporterValues(:, r), 'LineStyle', currentStyle,'Color', currentColor, 'LineWidth', 0.5);
@@ -105,6 +111,15 @@ for i = 2:numReporters
         yticks(0:20:100)
         set(gca,'XGrid','off','YGrid','on')
     end
+    % if i == 3
+    %     if z == 1
+    %         ylim = [20, 35];
+    %     elseif z == 2
+    %         ylim = [40, 55];
+    %     elseif z == 3
+    %         ylim = [65, 80];
+    %     end
+    % end
     xlabel('Time (weeks)');
     ylabel(ReporterLabels{i-1})
 
@@ -128,7 +143,7 @@ for rowIndex = 2:numRunParams+1
         numReps = length(uniqueValues);
     end
 end
-treatmentLabel = {"control", "pirf", "pentox", "     pentox & pirf"};
+treatmentLabel = {"untreated", "pirf", "pentox", "     pentox & pirf"};
 for rowIndex = 2    
     % Extract the row as a cell array
     rowData = table2array(RunParams(rowIndex, 2:end));
@@ -287,7 +302,7 @@ for rowIndex = 2
             b.CData = scaledColors;
 
 
-            if z == 3
+            if z == length(ResultsPath)
                 % Set custom x-axis labels
                 xticks(x);
                 xticklabels(treatmentLabel);
@@ -435,7 +450,7 @@ end
                 b.CData = scaledColors;
                 errorbar(x,yplot,barError,'k', 'linestyle', 'none')    
     
-                if z == 3
+                if z == length(ResultsPath)
                     % Set custom x-axis labels
                     xticks(x);
                     xticklabels(treatmentLabel);
@@ -473,6 +488,16 @@ yLimitsPanel5 = ylim(allAxes(5));
 ylim(allAxes(10), yLimitsPanel5);
 ylim(allAxes(15), yLimitsPanel5);
 
+% Fix % collagen A limits
+ylim(allAxes(2), [20 80]);
+yticks(allAxes(2), 20:15:80);
+% Fix % collagen C limits
+ylim(allAxes(7), [20 80]);
+yticks(allAxes(7), 20:15:80);
+% Fix % collagen D limits
+ylim(allAxes(12), [20 80]);
+yticks(allAxes(12), 20:15:80);
+
 % Create an invisible axes that spans the whole figure
 axLegend = axes('Position',[0 0 1 1],'Visible','off');
 hold(axLegend, 'on');
@@ -485,7 +510,7 @@ for c = 1:length(figColors)
 end
 
 % --- Line Style Legend ---
-styleLabels = {"control","pirf","pentox","pentox & pirf"};
+styleLabels = {"untreated","pirf","pentox","pentox & pirf"};
 styleHandles = gobjects(length(lineStyles),1);
 for s = 1:length(lineStyles)
     styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
@@ -507,7 +532,7 @@ lgd.Box = 'off';
 lgd.NumColumns = max(length(colorHandles), length(styleHandles));
 
 cols = numReporters-1;
-for r = 1:3
+for r = 1:length(ResultsPath)
     % Find the first subplot in this row
     idx = (r-1)*cols + 1;
     ax = allAxes(idx);
@@ -592,7 +617,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     end
     
     % --- Line Style Legend ---
-    styleLabels = {"control","pirf","pentox","pentox & pirf"};
+    styleLabels = {"untreated","pirf","pentox","pentox & pirf"};
     styleHandles = gobjects(length(lineStyles),1);
     for s = 1:length(lineStyles)
         styleHandles(s) = plot(axLegend, nan, nan, lineStyles{s}, 'Color', [0 0 0], 'LineWidth', 0.5);
@@ -614,7 +639,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     lgd.NumColumns = max(length(colorHandles), length(styleHandles));
     
     cols = numReporters-1;
-    for r = 1:3
+    for r = 1:length(ResultsPath)
         % Find the first subplot in this row
         idx = (r-1)*cols + 1;
         ax = allAxes(idx);
@@ -634,6 +659,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
 
     
     end
+
     ReporterLabels{3-1} = 'perc pixel collagen';
     figname = strcat('PlotBSforEachifc',ReporterLabels{i-1});
     %saveas(gcf,strcat(figname, '.png'));
@@ -695,11 +721,14 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     end
     if i == 6 
         % Get Y-limits from the 3rd panel
-        yLimitsPanel3 = ylim(allAxes(3));
+        yLimitsPanel = 0;
+        for p = 1:15
+            yLimitsPanel = max(yLimitsPanel,ylim(allAxes(p)));
+        end
 
         % Apply same limits to all panels
         for k = 1:length(allAxes)
-            ylim(allAxes(k), yLimitsPanel3);
+            ylim(allAxes(k), yLimitsPanel);
         end
     end
 
@@ -730,7 +759,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
 
     
     cols = numReporters-1;
-    for r = 1:3
+    for r = 1:length(ResultsPath)
         % Find the first subplot in this row
         idx = (r-1)*cols + 1;
         ax = allAxes(idx);
@@ -796,16 +825,15 @@ end
 allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
 
 
-
     % Apply same limits to all panels
-    for k = 1:5
-        ylim(allAxes(k), [0 2500]); 
-        yticks(0:625:2500)
+    for k = 1:length(allAxes)
+        ylim(allAxes(k), [0 3000]); 
+        yticks(allAxes(k),0:600:3000)
     end
-    for k = 6:length(allAxes)
-        ylim(allAxes(k), [0 1250]);
-        yticks(0:625:1250)
-    end
+    % for k = 6:length(allAxes)
+    %     ylim(allAxes(k), [0 3000]);
+    %     yticks(0:625:1250)
+    % end
 
 
 % Create an invisible axes that spans the whole figure
@@ -835,7 +863,7 @@ lgd.Box = 'off';
 
 
 cols = 5;
-for r = 1:3
+for r = 1:length(ResultsPath)
     % Find the first subplot in this row
     idx = (r-1)*cols + 1;
     ax = allAxes(idx);
@@ -872,8 +900,4 @@ fig = gcf;
 %figname = 'test';
 exportgraphics(fig,strcat(figname, '.png'),'Resolution',600, 'ContentType', 'vector')
 
-
-
-
-
-            warning('on', 'all')
+warning('on', 'all')

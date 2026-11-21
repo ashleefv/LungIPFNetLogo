@@ -1,25 +1,40 @@
 clear all
 close all
 addpath(genpath('natsortfiles'));
-folder{1} = 'BehaviorSpaceResults\Results-V10T03-280-A1-101525';
-folder{2} = 'BehaviorSpaceResults\Results-V19S23-092-C1-101525';
-folder{3} = 'BehaviorSpaceResults\Results-V10T03-279-D1-101525';
+% folder{1} = 'BehaviorSpaceResults\Results-V10T03-280-A1-101525';
+% folder{2} = 'BehaviorSpaceResults\Results-V19S23-092-C1-101525';
+% folder{3} = 'BehaviorSpaceResults\Results-V10T03-279-D1-101525';
+folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080826-10Reps';
+folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080826-10Reps';
+folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080826-10Reps';
+
 cases = {'a) Case A','b) Case C','c) Case D'};
 outputDPI = 600;
 
 cols = 5;                 % columns per row
-rows_per_case = 3;        % rows per condition
+rows_per_case = 1;        % rows per condition
 total_rows = rows_per_case * numel(cases);
-
+replicates = 10;
 % Labels
-replicateLabels = {"Rep. 1","Rep. 2","Rep. 3"};
+%replicateLabels = {"Rep. 1","Rep. 2","Rep. 3"};
 treatmentLabels = {"Initial time", ...
-    "52 weeks: control", ...
+    "52 weeks: untreated", ...
     "52 weeks: pirf", ...
     "52 weeks: pentox", ...
     "52 weeks: pentox & pirf"}; % note: '&' literal
 % Your selection indices per condition (length must equal rows_per_case*cols)
-selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
+% selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
+numberifcValues = 5;
+numberTreatmentValues = 4;
+numberSimsInSet = numberifcValues*numberTreatmentValues*replicates;
+ifcCase = 5; % options 1, 2, 3, 3, 5 for ifc = 20, 40, 60, 80, 100
+zeroIndexForifcCase = (ifcCase-1)*numberTreatmentValues*replicates;
+finalIndexForifcCase = ifcCase*numberTreatmentValues*replicates;
+selectedset = [];
+for i = 1:rows_per_case
+    selectedset = [selectedset, numberSimsInSet+zeroIndexForifcCase+i, zeroIndexForifcCase+i:replicates:finalIndexForifcCase];
+    % selectedset = [numberSimsInSet+49, 49:replicates:numberSimsInSet, numberSimsInSet+50, 50:replicates:numberSimsInSet, numberSimsInSet+51, 51:replicates:numberSimsInSet];
+end
 assert(numel(selectedset)==rows_per_case*cols, ...
     'selectedset must have %d entries', rows_per_case*cols);
 
@@ -128,8 +143,8 @@ ylim(ax, [-100 H]);            % extend above the image for header space
 % Column headers (top, once)
 for ccol = 1:cols
     xPos = (ccol - 0.5) * w0;
-    text(ax, xPos, -100, treatmentLabels{ccol}, ...
-         'FontSize', 6, 'Color','k', ...
+    text(ax, xPos, -50, treatmentLabels{ccol}, ...
+         'FontSize', 12, 'Color','k', ...
          'HorizontalAlignment','center', 'VerticalAlignment','top', ...
          'Interpreter','none');
 end
@@ -138,17 +153,17 @@ end
 for gRow = 1:total_rows
     r_local = mod(gRow-1, rows_per_case) + 1;
     yPos = (gRow - 0.5) * h0;
-    text(ax, -25, yPos, replicateLabels{r_local}, ...
-         'FontSize', 6, 'Color','k', ...
-         'HorizontalAlignment','right', 'VerticalAlignment','middle', ...
-         'Interpreter','none');
+    % text(ax, -25, yPos, replicateLabels{r_local}, ...
+    %      'FontSize', 12, 'Color','k', ...
+    %      'HorizontalAlignment','right', 'VerticalAlignment','middle', ...
+    %      'Interpreter','none');
 end
 
 % Optional: left condition labels ('A','C','D') at the top of each 3-row block
 % ------------------------------
 % Condition labels OUTSIDE the image block (upper-left)
 % ------------------------------
-x_left = -250;   % left of canvas (similar to replicate label offset)
+x_left = -175;   % left of canvas (similar to replicate label offset)
 y_offset = 0;  % place label 20 px ABOVE the block
 
 for z = 1:numel(cases)
@@ -157,7 +172,7 @@ for z = 1:numel(cases)
 
     % Final label position outside the block
     text(ax, x_left, y_top_block + y_offset, cases{z}, ...
-         'FontSize', 6, 'Color', 'k', ...
+         'FontSize', 12, 'Color', 'k', ...
          'HorizontalAlignment','left', 'VerticalAlignment','top', ...
          'Interpreter','none');
 end
