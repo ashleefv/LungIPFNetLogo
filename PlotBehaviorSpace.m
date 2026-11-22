@@ -660,7 +660,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     
     end
 
-    ReporterLabels{3-1} = 'perc pixel collagen';
+    ReporterLabels{3-1} = 'percent collagen';
     figname = strcat('PlotBSforEachifc',ReporterLabels{i-1});
     %saveas(gcf,strcat(figname, '.png'));
     
@@ -779,7 +779,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
 
     
     end
-    ReporterLabels{3-1} = 'perc pixel collagen';
+    ReporterLabels{3-1} = 'percent collagen';
     figname = strcat('PlotBSbargraphsforEachifc',ReporterLabels{i-1});
     %saveas(gcf,strcat(figname, '.png'));
     
