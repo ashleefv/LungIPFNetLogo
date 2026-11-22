@@ -2,9 +2,9 @@
 clear all; close all; warning('off','all');
 addpath(genpath('natsortfiles'));
 
-% folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080326';
-% folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080326';
-% folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080326';
+%folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080326';
+%folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080326';
+%folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080326';
 folder{1} = 'BehaviorSpaceResults\Results-V10T31-019-A1-080826-10Reps';
 folder{2} = 'BehaviorSpaceResults\Results-V10T31-015-C1-080826-10Reps';
 folder{3} = 'BehaviorSpaceResults\Results-V10T31-015-D1-080826-10Reps';
@@ -19,10 +19,10 @@ numberSimsInSet = numberifcValues*numberTreatmentValues*replicates;
 ifcCase = 5; % options 1, 2, 3, 3, 5 for ifc = 20, 40, 60, 80, 100
 zeroIndexForifcCase = (ifcCase-1)*numberTreatmentValues*replicates;
 finalIndexForifcCase = ifcCase*numberTreatmentValues*replicates;
-cols = 5; rows = 3; repsPerCase = 3;
+cols = 5; rows = 3; repsPerCase = 10;
 selectedset = [];
 selectedmatrix = [];
-for i = 1:rows
+for i = 1:repsPerCase
     selectedset = [selectedset, numberSimsInSet+zeroIndexForifcCase+i, zeroIndexForifcCase+i:replicates:finalIndexForifcCase];
     % selectedset = [numberSimsInSet+49, 49:replicates:numberSimsInSet, numberSimsInSet+50, 50:replicates:numberSimsInSet, numberSimsInSet+51, 51:replicates:numberSimsInSet];
     selectedmatrix = [selectedmatrix; numberSimsInSet+zeroIndexForifcCase+i, zeroIndexForifcCase+i:replicates:finalIndexForifcCase];
@@ -30,7 +30,7 @@ end
 %selectedset = [60+49, 49:3:60, 60+50, 50:3:60, 60+51, 51:3:60];
 % selectedmatrix = [60+49, 49:3:60; 60+50, 50:3:60; 60+51, 51:3:60];
 
-replicateLabels = {"Rep1","Rep2","Rep3"};
+%replicateLabels = {"Rep1","Rep2","Rep3"};
 rowLabels = {"NetLogo world","Patch collagen value","Patch TGF\beta value"};
 treatmentLabels = {"Initial time","52 weeks: untreated","52 weeks: pirf","52 weeks: pentox","52 weeks: pentox & pirf"};
 
@@ -192,7 +192,7 @@ for z = 1:3
             'FontSize', 10,  'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'middle', 'EdgeColor', 'none');
 
-        figname = strcat('combined_gridZoom_', cases{z}, replicateLabels{r});
+        figname = strcat('combined_gridZoom_', cases{z}, 'Rep', num2str(r));
         %saveas(gcf,strcat(figname, '.png'));
 
         fig= gcf;
@@ -220,7 +220,7 @@ for z = 1:3
         close all
     end
 
-    cols = 5; rows = 3; repsPerCase = 3;
+    cols = 5; rows = 3;
     for r = 1:repsPerCase
         figure(r)
         fig = gcf;
@@ -328,7 +328,7 @@ for z = 1:3
             'FontSize', 10,  'HorizontalAlignment', 'center', ...
             'VerticalAlignment', 'middle', 'EdgeColor', 'none');
 
-        figname = strcat('combined_grid_', cases{z}, replicateLabels{r});
+        figname = strcat('combined_grid_', cases{z}, 'Rep', num2str(r));
         %saveas(gcf,strcat(figname, '.png'));
 
         fig= gcf;
@@ -359,81 +359,3 @@ for z = 1:3
 end
 warning('on', 'all')
 
-% =============================
-% Combine compact Rep 1–3 panels
-% =============================
-cases = {'A','C','D'};
-repLetters = {'a) Rep. 1','b) Rep. 2','c) Rep. 3'};      % labels for each replicate
-outputDPI = 600;
-
-for z = 1:numel(cases)
-    ims = cell(1,3);
-    % Read compact per-replicate images
-    for r = 1:3
-        fname = sprintf('combined_grid_%sRep%d.png', cases{z}, r);
-        if ~isfile(fname)
-            error('Expected file not found: %s. Make sure Step 1 exported images.', fname);
-        end
-        ims{r} = imread(fname);
-    end
-
-    % Normalize widths so they tile cleanly (preserve aspect ratio)
-    targetW = min(cellfun(@(I) size(I,2), ims));  % smallest width
-    for r = 1:3
-        if size(ims{r},2) ~= targetW
-            ims{r} = imresize(ims{r}, [NaN, targetW]);  % requires Image Processing Toolbox
-        end
-    end
-
-    % Create a tall figure (portrait) and tile 3 rows x 1 column
-    fig = figure('Units','inches','Position',[1 1 7.5 11]); % ~letter portrait
-    tl = tiledlayout(fig, 3, 1, 'TileSpacing','compact', 'Padding','compact');
-
-    for r = 1:3
-        ax = nexttile(tl);
-        imshow(ims{r}, 'Parent', ax, 'Border', 'tight');
-        axis(ax, 'off');
-
-        % Add label in the upper-left corner of each image
-        text(ax, 0.01, 0.99, repLetters{r}, ...
-            'Units','normalized', ...
-            'HorizontalAlignment','left', 'VerticalAlignment','top', ...
-            'FontSize', 10, 'Color','k');
-    end
-
-    outname = sprintf('combined_grid_%s_Rep1-3_compact.png', cases{z});
-    exportgraphics(fig, outname, 'Resolution', outputDPI);
-    close(fig);
-end
-
-function plotPatchQuantityWithCollagenBoundary(x,y,patchquantity,QuantNameString,patchcolor,edges,colors)
-    x_unique = unique(x); y_unique = unique(y);
-    Z = nan(length(y_unique), length(x_unique));
-    for i = 1:length(x_unique)
-        for j = 1:length(y_unique)
-            idx = (x==x_unique(i)) & (y==y_unique(j));
-            if any(idx)
-                if patchcolor(idx)>9.9
-                    Z(j,i)=patchquantity(idx);
-                else
-                    Z(j,i)=NaN;
-                end
-            end
-        end
-    end
-    Zpad=[Z nan(size(Z,1),1); nan(1,size(Z,2)+1)];
-    [X,Y]=meshgrid([x_unique;x_unique(end)+1],[y_unique;y_unique(end)+1]);
-    if strcmp(QuantNameString, 'patch\_tgfbeta')
-        initialTGFbeta = 5000;
-        s = pcolor(X, Y, Zpad/initialTGFbeta);
-    else
-        s=pcolor(X,Y,Zpad); 
-    end
-    s.EdgeColor='none'; 
-    shading flat; axis equal tight; 
-    set(gca,'XTickLabel',{},'YTickLabel',{});
-    set(gca, 'XTick', [], 'YTick', [],'XColor', 'none','YColor','none')
-    box off; % removes the box around the plot, 
-    colormap(gca,colors); 
-    caxis([edges(1) edges(end)]);
-end
