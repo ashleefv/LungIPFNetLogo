@@ -359,3 +359,34 @@ for z = 1:3
 end
 warning('on', 'all')
 
+function plotPatchQuantityWithCollagenBoundary(x,y,patchquantity,QuantNameString,patchcolor,edges,colors)
+    x_unique = unique(x); y_unique = unique(y);
+    Z = nan(length(y_unique), length(x_unique));
+    for i = 1:length(x_unique)
+        for j = 1:length(y_unique)
+            idx = (x==x_unique(i)) & (y==y_unique(j));
+            if any(idx)
+                if patchcolor(idx)>9.9
+                    Z(j,i)=patchquantity(idx);
+                else
+                    Z(j,i)=NaN;
+                end
+            end
+        end
+    end
+    Zpad=[Z nan(size(Z,1),1); nan(1,size(Z,2)+1)];
+    [X,Y]=meshgrid([x_unique;x_unique(end)+1],[y_unique;y_unique(end)+1]);
+    if strcmp(QuantNameString, 'patch\_tgfbeta')
+        initialTGFbeta = 5000;
+        s = pcolor(X, Y, Zpad/initialTGFbeta);
+    else
+        s=pcolor(X,Y,Zpad); 
+    end
+    s.EdgeColor='none'; 
+    shading flat; axis equal tight; 
+    set(gca,'XTickLabel',{},'YTickLabel',{});
+    set(gca, 'XTick', [], 'YTick', [],'XColor', 'none','YColor','none')
+    box off; % removes the box around the plot, 
+    colormap(gca,colors); 
+    caxis([edges(1) edges(end)]);
+end
