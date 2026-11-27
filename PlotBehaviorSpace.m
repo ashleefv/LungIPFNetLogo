@@ -75,10 +75,12 @@ figColors = [
     0.8 0.0 0.0;        % red
 ];
 
+plotOrder = [4 5 2 3 6];
 ReporterLabels = {'total collagen', '% collagen', 'fibroblasts', 'myofibroblasts', 'max collagen'};
-for i = 2:numReporters
+for p = 1:length(plotOrder)
+    i = plotOrder(p);
     figure(1)
-    subplot(length(ResultsPath),numReporters-1,(z-1)*(numReporters-1) + (i-1));
+    subplot(length(ResultsPath),numReporters-1,(z-1)*(numReporters-1) + p);
     ReporterNumber = i;
     reporterValues = RunData{:,ReporterNumber:numReporters:finalColIndexStart-numReporters+ReporterNumber};
     % should add legend with DisplayName across runs
@@ -489,14 +491,14 @@ ylim(allAxes(10), yLimitsPanel5);
 ylim(allAxes(15), yLimitsPanel5);
 
 % Fix % collagen A limits
-ylim(allAxes(2), [20 80]);
-yticks(allAxes(2), 20:15:80);
+ylim(allAxes(4), [20 80]);
+yticks(allAxes(4), 20:15:80);
 % Fix % collagen C limits
-ylim(allAxes(7), [20 80]);
-yticks(allAxes(7), 20:15:80);
+ylim(allAxes(9), [20 80]);
+yticks(allAxes(9), 20:15:80);
 % Fix % collagen D limits
-ylim(allAxes(12), [20 80]);
-yticks(allAxes(12), 20:15:80);
+ylim(allAxes(14), [20 80]);
+yticks(allAxes(14), 20:15:80);
 
 % Create an invisible axes that spans the whole figure
 axLegend = axes('Position',[0 0 1 1],'Visible','off');
@@ -586,24 +588,36 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
     % Sort them in the order they were created (subplot order)
     allAxes = flipud(allAxes);  % MATLAB stores them in reverse order
     
-    % if i == 1
-    %     % Get Y-limits from the 5th panel
-    %     yLimitsPanel5 = ylim(allAxes(5));
-    % 
-    %     % Apply same limits to all panels
-    %     for k = 1:length(allAxes)
-    %         ylim(allAxes(k), yLimitsPanel5);
-    %     end
-    % end
-    % if i == 6
-    %     % Get Y-limits from the 3rd panel
-    %     yLimitsPanel3 = ylim(allAxes(3));
-    % 
-    %     % Apply same limits to all panels
-    %     for k = 1:length(allAxes)
-    %         ylim(allAxes(k), yLimitsPanel3);
-    %     end
-    % end
+  
+    if i == 2 
+            % Get Y-limits from the 10th panel
+            yLimitsPanel10 = ylim(allAxes(10));
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel10);
+        end
+    end
+    if i == 3
+        yLimitsPanel =[20 80];
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel);
+        end
+    end
+    if i == 6 
+        % Get Y-limits from the 3rd panel
+        yLimitsPanel = 0;
+        for p = 1:15
+            yLimitsPanel = max(yLimitsPanel,ylim(allAxes(p)));
+        end
+
+        % Apply same limits to all panels
+        for k = 1:length(allAxes)
+            ylim(allAxes(k), yLimitsPanel);
+        end
+    end
 
     % Create an invisible axes that spans the whole figure
     axLegend = axes('Position',[0 0 1 1],'Visible','off');
@@ -645,7 +659,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
         ax = allAxes(idx);
         if i == 6
         % Add text to the left side of the row
-        text(ax, -0.7, 0.5, ResultsString(r), ...
+        text(ax, -0.9, 0.5, ResultsString(r), ...
             'Units', 'normalized', ...
             'HorizontalAlignment', 'center', ...
             'FontSize', 8);
@@ -811,6 +825,7 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
 end
 
 figure(20)
+%average collagen
 hold on
 
 % Get handle to all axes created by subplot
