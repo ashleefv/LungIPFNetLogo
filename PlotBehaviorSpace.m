@@ -326,8 +326,101 @@ for rowIndex = 2
             %title(string(RunParams{rowIndex,1})+ ' = ' + num2str(uniqueValues(k)))
 
             errorbar(x,y,barError,'k', 'linestyle', 'none')
-            hold off
+            
+            if i == 6
+                yRange = [0 11566];
+                ylim(yRange)%determined later as the max over all panels
+                %% ANOVA + Tukey-Kramer
 
+                allData = [];
+                groupLabels = [];
+                ylimTop = yRange(2);
+                for g = 1:4
+            
+                    temp = squeeze(storeY(k,z,i,g,:));
+            
+                    allData = [allData; temp(:)];
+            
+                    groupLabels = [groupLabels;
+                                   repmat(g,length(temp),1)];
+            
+                end
+            
+                [pAnova,~,stats] = anova1(allData,groupLabels,'off');
+            
+                if pAnova < 0.05
+            
+                    results = multcompare(stats,...
+                                          'CType','tukey-kramer',...
+                                          'Display','off');
+            
+                    % Keep only comparisons against untreated (group 1)
+                    untreatedComparisons = results(results(:,1)==1,:);
+                    nSig = sum(untreatedComparisons(:,6) < 0.05);
+                    countSig = 0;
+                    
+                    annotationBottom = 0.78*ylimTop;
+                    annotationHeight = 0.18*ylimTop;
+            
+                    for r = 1:size(untreatedComparisons,1)
+            
+                        treatment = untreatedComparisons(r,2);
+                        pval = untreatedComparisons(r,6);
+            
+                        if pval < 0.05
+                            countSig = countSig + 1;
+                            % Significance label
+                            if pval < 0.001
+                                label = '***';
+                            elseif pval < 0.01
+                                label = '**';
+                            else
+                                label = '*';
+                            end
+            
+                            if nSig == 2
+                                yPos = annotationBottom + ...
+                                    (countSig)*(annotationHeight/(3-1));
+                            elseif nSig == 3
+                                yPos = annotationBottom + ...
+                                    (countSig-1)*(annotationHeight/(nSig-1));
+                            end
+                            
+                            tickHeight = 0.01*ylimTop;
+                            
+                            % horizontal bar
+                            plot([1 treatment], ...
+                                 [yPos yPos], ...
+                                 'k', ...
+                                 'LineWidth',0.75)
+                            
+                            % left tick
+                            plot([1 1], ...
+                                 [yPos-tickHeight yPos], ...
+                                 'k', ...
+                                 'LineWidth',0.75)
+                            
+                            % right tick
+                            plot([treatment treatment], ...
+                                 [yPos-tickHeight yPos], ...
+                                 'k', ...
+                                 'LineWidth',0.75)
+                            
+                            % significance symbols
+                            text(mean([1 treatment]), ...
+                                 yPos + 0.01*ylimTop, ...
+                                 label, ...
+                                 'HorizontalAlignment','center', ...
+                                 'FontSize',8)
+                        end
+            
+                    end
+            
+                end
+            
+            end
+
+            hold off
             % % %% Deltas
             % figure(3*(numReporters-1) + i)
             % temp = rowData(matchingIndices);
@@ -612,7 +705,6 @@ for i = [2 3 numReporters]% 2:numReporters; don't further process final numbers 
         for p = 1:15
             yLimitsPanel = max(yLimitsPanel,ylim(allAxes(p)));
         end
-
         % Apply same limits to all panels
         for k = 1:length(allAxes)
             ylim(allAxes(k), yLimitsPanel);
